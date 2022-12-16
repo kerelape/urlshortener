@@ -10,16 +10,7 @@ import (
 const UrlShortenerPath = "/"
 
 func main() {
-	var shortener = app.NewDatabaseShortener(
-		app.NewFakeDatabase(),
-		app.NewJoinedAlphabet(
-			app.NewAsciiAlphabet(48, 57),
-			app.NewJoinedAlphabet(
-				app.NewAsciiAlphabet(65, 90),
-				app.NewAsciiAlphabet(97, 122),
-			),
-		),
-	)
+	var shortener = app.NewDatabaseShortener(app.NewFakeDatabase())
 	var shortenerHttpInterface = app.NewMethodFilter(
 		http.MethodPost,
 		app.NewShortenHandler(shortener),
