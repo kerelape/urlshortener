@@ -27,6 +27,6 @@ func (self *ShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No URL provided", http.StatusBadRequest)
 		return
 	}
-	io.WriteString(w, self.Shortener.Shorten(url))
 	w.WriteHeader(http.StatusCreated)
+	io.WriteString(w, self.Shortener.Shorten(url))
 }
