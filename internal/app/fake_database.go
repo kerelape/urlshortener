@@ -12,11 +12,13 @@ func NewFakeDatabase() *FakeDatabase {
 }
 
 func (self *FakeDatabase) Put(value string) uint {
+	println("Insering", value)
 	self.Values = append(self.Values, value)
 	return uint(len(self.Values) - 1)
 }
 
 func (self *FakeDatabase) Get(id uint) (string, error) {
+	println("Getting", id)
 	if id >= uint(len(self.Values)) {
 		return "", errors.New("element does not exist")
 	}
