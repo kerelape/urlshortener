@@ -29,7 +29,6 @@ func main() {
 			app.MethodNotAllowedHandler(),
 		),
 	)
-
 	var service = http.NewServeMux()
 	service.Handle(UrlShortenerPath, shortenerHttpInterface)
 	log.Fatal(http.ListenAndServe(":8080", service))
