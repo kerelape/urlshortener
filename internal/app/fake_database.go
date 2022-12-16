@@ -11,14 +11,14 @@ func NewFakeDatabase() *FakeDatabase {
 	return new(FakeDatabase)
 }
 
-func (self *FakeDatabase) Put(value string) uint {
-	self.Values = append(self.Values, value)
-	return uint(len(self.Values) - 1)
+func (database *FakeDatabase) Put(value string) uint {
+	database.Values = append(database.Values, value)
+	return uint(len(database.Values) - 1)
 }
 
-func (self *FakeDatabase) Get(id uint) (string, error) {
-	if id >= uint(len(self.Values)) {
+func (database *FakeDatabase) Get(id uint) (string, error) {
+	if id >= uint(len(database.Values)) {
 		return "", errors.New("element does not exist")
 	}
-	return self.Values[id], nil
+	return database.Values[id], nil
 }

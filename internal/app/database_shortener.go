@@ -13,16 +13,16 @@ func NewDatabaseShortener(database Database) *DatabaseShortener {
 	return shortener
 }
 
-func (self *DatabaseShortener) Shorten(origin string) string {
-	var id = self.Database.Put(origin)
+func (shortener *DatabaseShortener) Shorten(origin string) string {
+	var id = shortener.Database.Put(origin)
 	var shortened = strconv.Itoa(int(id))
 	return shortened
 }
 
-func (self *DatabaseShortener) Reveal(shortened string) (string, error) {
+func (shortener *DatabaseShortener) Reveal(shortened string) (string, error) {
 	var id, err = strconv.Atoi(shortened)
 	if err != nil {
 		return "", err
 	}
-	return self.Database.Get(uint(id))
+	return shortener.Database.Get(uint(id))
 }

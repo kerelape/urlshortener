@@ -18,9 +18,9 @@ func NewRevealHandler(prefix string, shortener Shortener) *RevealHandler {
 	return handler
 }
 
-func (self *RevealHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var shortened = strings.TrimPrefix(r.URL.Path, self.Prefix)
-	var origin, err = self.Shortener.Reveal(shortened)
+func (handler *RevealHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var shortened = strings.TrimPrefix(r.URL.Path, handler.Prefix)
+	var origin, err = handler.Shortener.Reveal(shortened)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

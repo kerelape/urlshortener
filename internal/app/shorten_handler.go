@@ -16,7 +16,7 @@ func NewShortenHandler(shortener Shortener) *ShortenHandler {
 	return handler
 }
 
-func (self *ShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (handler *ShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var body, err = io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read url", http.StatusInternalServerError)
@@ -28,5 +28,5 @@ func (self *ShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, self.Shortener.Shorten(url))
+	io.WriteString(w, handler.Shortener.Shorten(url))
 }

@@ -18,12 +18,12 @@ func NewMethodFilter(method string, handler http.Handler, fallback http.Handler)
 	return filter
 }
 
-func (self *MethodFilter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (filter *MethodFilter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var handler http.Handler
-	if r.Method == self.Method {
-		handler = self.Handler
+	if r.Method == filter.Method {
+		handler = filter.Handler
 	} else {
-		handler = self.Fallback
+		handler = filter.Fallback
 	}
 	handler.ServeHTTP(w, r)
 }

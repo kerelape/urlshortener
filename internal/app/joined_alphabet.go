@@ -12,14 +12,14 @@ func NewJoinedAlphabet(start Alphabet, end Alphabet) *JoinedAlphabet {
 	return alphabet
 }
 
-func (self *JoinedAlphabet) Size() uint {
-	return self.Start.Size() + self.End.Size()
+func (alphabet *JoinedAlphabet) Size() uint {
+	return alphabet.Start.Size() + alphabet.End.Size()
 }
 
-func (self *JoinedAlphabet) Rune(id uint) rune {
-	var startSize = self.Start.Size()
+func (alphabet *JoinedAlphabet) Rune(id uint) rune {
+	var startSize = alphabet.Start.Size()
 	if id >= startSize {
-		return self.End.Rune(id - startSize)
+		return alphabet.End.Rune(id - startSize)
 	}
-	return self.Start.Rune(id)
+	return alphabet.Start.Rune(id)
 }

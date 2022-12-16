@@ -12,13 +12,13 @@ func NewAsciiAlphabet(min uint8, max uint8) *AsciiAlphabet {
 	return alphabet
 }
 
-func (self *AsciiAlphabet) Size() uint {
-	return uint(self.Max-self.Min) + 1
+func (alphabet *AsciiAlphabet) Size() uint {
+	return uint(alphabet.Max-alphabet.Min) + 1
 }
 
-func (self *AsciiAlphabet) Rune(id uint) rune {
-	if id >= self.Size() {
+func (alphabet *AsciiAlphabet) Rune(id uint) rune {
+	if id >= alphabet.Size() {
 		panic("Out of alphabet")
 	}
-	return rune(id + uint(self.Min))
+	return rune(id + uint(alphabet.Min))
 }
