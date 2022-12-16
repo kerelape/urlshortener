@@ -10,17 +10,13 @@ import (
 const URLShortenerPath = "/"
 
 func main() {
-	var shortener = app.NewDatabaseShortener(app.NewFakeDatabase())
-	var shortenerHTTPInterface = app.NewMethodFilter(
-		http.MethodPost,
-		app.NewShortenHandler(shortener),
-		app.NewMethodFilter(
-			http.MethodGet,
-			app.NewRevealHandler(URLShortenerPath, shortener),
-			app.MethodNotAllowedHandler(),
+	var service = http.NewServeMux()
+	service.Handle(
+		URLShortenerPath,
+		app.NewShortenerHTTPInterface(
+			app.NewDatabaseShortener(app.NewFakeDatabase()),
+			URLShortenerPath,
 		),
 	)
-	var service = http.NewServeMux()
-	service.Handle(URLShortenerPath, shortenerHTTPInterface)
 	log.Fatal(http.ListenAndServe(":8080", service))
 }
