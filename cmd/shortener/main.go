@@ -11,7 +11,7 @@ const URLShortenerPath = "/"
 
 func main() {
 	var shortener = app.NewDatabaseShortener(app.NewFakeDatabase())
-	var shortenerHttpInterface = app.NewMethodFilter(
+	var shortenerHTTPInterface = app.NewMethodFilter(
 		http.MethodPost,
 		app.NewShortenHandler(shortener),
 		app.NewMethodFilter(
@@ -21,6 +21,6 @@ func main() {
 		),
 	)
 	var service = http.NewServeMux()
-	service.Handle(URLShortenerPath, shortenerHttpInterface)
+	service.Handle(URLShortenerPath, shortenerHTTPInterface)
 	log.Fatal(http.ListenAndServe(":8080", service))
 }
