@@ -19,7 +19,7 @@ func NewRevealHandler(prefix string, shortener Shortener) *RevealHandler {
 }
 
 func (self *RevealHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var shortened = strings.TrimPrefix(self.Prefix, r.URL.Path)
+	var shortened = strings.TrimPrefix(r.URL.Path, self.Prefix)
 	var origin, err = self.Shortener.Reveal(shortened)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
