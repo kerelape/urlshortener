@@ -1,22 +1,22 @@
 package app
 
-type AsciiAlphabet struct {
+type ASCIIAlphabet struct {
 	Min uint8
 	Max uint8
 }
 
-func NewAsciiAlphabet(min uint8, max uint8) *AsciiAlphabet {
-	var alphabet = new(AsciiAlphabet)
+func NewASCIIAlphabet(min uint8, max uint8) *ASCIIAlphabet {
+	var alphabet = new(ASCIIAlphabet)
 	alphabet.Min = min
 	alphabet.Max = max
 	return alphabet
 }
 
-func (alphabet *AsciiAlphabet) Size() uint {
+func (alphabet *ASCIIAlphabet) Size() uint {
 	return uint(alphabet.Max-alphabet.Min) + 1
 }
 
-func (alphabet *AsciiAlphabet) Rune(id uint) rune {
+func (alphabet *ASCIIAlphabet) Rune(id uint) rune {
 	if id >= alphabet.Size() {
 		panic("Out of alphabet")
 	}

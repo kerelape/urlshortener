@@ -7,7 +7,7 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
-const UrlShortenerPath = "/"
+const URLShortenerPath = "/"
 
 func main() {
 	var shortener = app.NewDatabaseShortener(app.NewFakeDatabase())
@@ -16,11 +16,11 @@ func main() {
 		app.NewShortenHandler(shortener),
 		app.NewMethodFilter(
 			http.MethodGet,
-			app.NewRevealHandler(UrlShortenerPath, shortener),
+			app.NewRevealHandler(URLShortenerPath, shortener),
 			app.MethodNotAllowedHandler(),
 		),
 	)
 	var service = http.NewServeMux()
-	service.Handle(UrlShortenerPath, shortenerHttpInterface)
+	service.Handle(URLShortenerPath, shortenerHttpInterface)
 	log.Fatal(http.ListenAndServe(":8080", service))
 }
