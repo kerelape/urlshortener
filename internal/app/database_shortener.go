@@ -2,7 +2,6 @@ package app
 
 import "strconv"
 
-// Encoding/decoding taken from https://gist.github.com/dgritsko/9554733
 type DatabaseShortener struct {
 	Database Database
 }
