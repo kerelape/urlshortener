@@ -10,13 +10,12 @@ import (
 const URLShortenerPath = "/"
 
 func main() {
-	var service = http.NewServeMux()
-	service.Handle(
+	http.Handle(
 		URLShortenerPath,
 		app.NewShortenerHTTPInterface(
 			app.NewDatabaseShortener(app.NewFakeDatabase()),
 			URLShortenerPath,
 		),
 	)
-	log.Fatal(http.ListenAndServe(":8080", service))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
