@@ -15,6 +15,7 @@ func main() {
 		app.NewShortenerHTTPInterface(
 			app.NewDatabaseShortener(app.NewFakeDatabase()),
 			URLShortenerPath,
+			"http://localhost:8080",
 		),
 	)
 	log.Fatal(http.ListenAndServe(":8080", nil))

@@ -7,12 +7,14 @@ import (
 
 type ShortenHandler struct {
 	Shortener Shortener
+	BaseURL   string
 }
 
 // Return new ShortenHandler.
-func NewShortenHandler(shortener Shortener) *ShortenHandler {
+func NewShortenHandler(shortener Shortener, baseURL string) *ShortenHandler {
 	var handler = new(ShortenHandler)
 	handler.Shortener = shortener
+	handler.BaseURL = baseURL
 	return handler
 }
 
@@ -28,5 +30,5 @@ func (handler *ShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, "http://localhost:8080/"+handler.Shortener.Shorten(url))
+	io.WriteString(w, handler.BaseURL+handler.Shortener.Shorten(url))
 }
