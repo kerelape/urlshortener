@@ -28,5 +28,5 @@ func (handler *ShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, handler.Shortener.Shorten(url))
+	io.WriteString(w, "http://localhost:8080/"+handler.Shortener.Shorten(url))
 }
