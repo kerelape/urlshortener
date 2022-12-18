@@ -4,21 +4,35 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	. "github.com/kerelape/urlshortener/internal/app/model"
 	. "github.com/kerelape/urlshortener/internal/app/ui/http"
 )
 
-const URLShortenerPath = "/"
-
 func main() {
-	http.Handle(
-		URLShortenerPath,
-		NewShortenerHTTPInterface(
-			NewURLShortener(
-				NewDatabaseShortener(NewFakeDatabase()),
-				"http://localhost:8080/",
+	var shortener = NewDatabaseShortener(NewFakeDatabase())
+	var router = chi.NewRouter()
+	router.Route("/", func(router chi.Router) {
+		var shortener = NewURLShortener(shortener, "http://localhost:8080/")
+		router.Get(
+			"/{short}",
+			HandlerToHandlerFunc(
+				NewRevealHandler(
+					shortener,
+					NewChiRevealRequestParser("short"),
+				),
 			),
-		),
-	)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+		)
+		router.Post(
+			"/",
+			HandlerToHandlerFunc(NewShortenHandler(shortener)),
+		)
+	})
+	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func HandlerToHandlerFunc(handler http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handler.ServeHTTP(w, r)
+	}
 }
