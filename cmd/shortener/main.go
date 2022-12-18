@@ -10,8 +10,15 @@ import (
 func main() {
 	log.Fatal(
 		http.NewURLShortenerHTTPService(
-			model.NewDatabaseShortener(
+			model.NewAlphabetShortener(
 				model.NewFakeDatabase(),
+				model.NewJoinedAlphabet(
+					model.NewASCIIAlphabet(48, 57),
+					model.NewJoinedAlphabet(
+						model.NewASCIIAlphabet(65, 90),
+						model.NewASCIIAlphabet(97, 122),
+					),
+				),
 			),
 			"localhost:8080",
 			"/",
