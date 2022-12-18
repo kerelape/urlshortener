@@ -1,6 +1,10 @@
-package app
+package http
 
-import "net/http"
+import (
+	"net/http"
+
+	. "github.com/kerelape/urlshortener/internal/app/model"
+)
 
 func NewShortenerHTTPInterface(shortener Shortener, prefix string, baseURL string) http.Handler {
 	return NewMethodFilter(

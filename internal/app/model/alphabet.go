@@ -1,4 +1,4 @@
-package app
+package model
 
 type Alphabet interface {
 	Size() uint

@@ -1,8 +1,10 @@
-package app
+package http
 
 import (
 	"net/http"
 	"strings"
+
+	. "github.com/kerelape/urlshortener/internal/app/model"
 )
 
 type RevealHandler struct {

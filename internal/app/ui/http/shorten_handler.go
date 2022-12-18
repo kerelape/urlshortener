@@ -1,8 +1,10 @@
-package app
+package http
 
 import (
 	"io"
 	"net/http"
+
+	. "github.com/kerelape/urlshortener/internal/app/model"
 )
 
 type ShortenHandler struct {

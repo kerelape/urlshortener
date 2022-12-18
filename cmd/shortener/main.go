@@ -4,7 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/kerelape/urlshortener/internal/app"
+	. "github.com/kerelape/urlshortener/internal/app/model"
+	. "github.com/kerelape/urlshortener/internal/app/ui/http"
 )
 
 const URLShortenerPath = "/"
@@ -12,8 +13,8 @@ const URLShortenerPath = "/"
 func main() {
 	http.Handle(
 		URLShortenerPath,
-		app.NewShortenerHTTPInterface(
-			app.NewDatabaseShortener(app.NewFakeDatabase()),
+		NewShortenerHTTPInterface(
+			NewDatabaseShortener(NewFakeDatabase()),
 			URLShortenerPath,
 			"http://localhost:8080",
 		),

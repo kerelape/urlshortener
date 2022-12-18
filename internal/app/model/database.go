@@ -1,4 +1,4 @@
-package app
+package model
 
 type Database interface {
 	Put(value string) uint

@@ -1,4 +1,4 @@
-package app
+package model
 
 type ASCIIAlphabet struct {
 	Min uint8

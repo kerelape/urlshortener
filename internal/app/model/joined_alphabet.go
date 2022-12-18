@@ -1,4 +1,4 @@
-package app
+package model
 
 type JoinedAlphabet struct {
 	Start Alphabet
