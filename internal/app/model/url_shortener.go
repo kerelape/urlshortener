@@ -4,20 +4,20 @@ import "strings"
 
 type URLShortener struct {
 	Shortener Shortener
-	Host      string
+	BaseURL   string
 }
 
-func NewURLShortener(origin Shortener, host string) *URLShortener {
+func NewURLShortener(origin Shortener, baseURL string) *URLShortener {
 	var shortener = new(URLShortener)
 	shortener.Shortener = origin
-	shortener.Host = host
+	shortener.BaseURL = baseURL
 	return shortener
 }
 
 func (shortener *URLShortener) Shorten(origin string) string {
-	return shortener.Host + shortener.Shortener.Shorten(origin)
+	return shortener.BaseURL + shortener.Shortener.Shorten(origin)
 }
 
 func (shortener *URLShortener) Reveal(shortened string) (string, error) {
-	return shortener.Shortener.Reveal(strings.TrimPrefix(shortened, shortener.Host))
+	return shortener.Shortener.Reveal(strings.TrimPrefix(shortened, shortener.BaseURL))
 }
