@@ -26,7 +26,7 @@ func (service *URLShortenerHTTPService) Execute() error {
 	router.Route(service.Path, func(router chi.Router) {
 		var shortener = model.NewURLShortener(
 			service.Shortener,
-			service.Host+service.Path,
+			"http://"+service.Host+service.Path,
 		)
 		router.Get(
 			"/{short}",

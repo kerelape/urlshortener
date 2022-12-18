@@ -13,7 +13,7 @@ func main() {
 			model.NewDatabaseShortener(
 				model.NewFakeDatabase(),
 			),
-			"http://localhost:8080",
+			"localhost:8080",
 			"/",
 		).Execute(),
 	)
