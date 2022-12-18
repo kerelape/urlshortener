@@ -22,3 +22,11 @@ func (alphabet *ASCIIAlphabet) Rune(id uint) rune {
 	}
 	return rune(id + uint(alphabet.Min))
 }
+
+func (alphabet *ASCIIAlphabet) String() string {
+	var runes []rune
+	for i := uint(0); i < alphabet.Size(); i++ {
+		runes = append(runes, alphabet.Rune(i))
+	}
+	return string(runes)
+}

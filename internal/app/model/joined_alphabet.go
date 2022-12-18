@@ -23,3 +23,7 @@ func (alphabet *JoinedAlphabet) Rune(id uint) rune {
 	}
 	return alphabet.Start.Rune(id)
 }
+
+func (alphabet *JoinedAlphabet) String() string {
+	return alphabet.Start.String() + alphabet.End.String()
+}
