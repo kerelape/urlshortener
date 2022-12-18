@@ -3,16 +3,16 @@ package http
 import (
 	"net/http"
 
-	. "github.com/kerelape/urlshortener/internal/app/model"
+	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
 type RevealHandler struct {
-	Shortener Shortener
+	Shortener model.Shortener
 	Parser    RevealRequestParser
 }
 
 // Return new RevealHandler.
-func NewRevealHandler(shortener Shortener, parser RevealRequestParser) *RevealHandler {
+func NewRevealHandler(shortener model.Shortener, parser RevealRequestParser) *RevealHandler {
 	var handler = new(RevealHandler)
 	handler.Shortener = shortener
 	handler.Parser = parser

@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	. "github.com/kerelape/urlshortener/internal/app/model"
+	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
 type URLShortenerHTTPService struct {
-	Shortener Shortener
+	Shortener model.Shortener
 	Host      string
 	Path      string
 }
 
-func NewURLShortenerHTTPService(shortener Shortener, host string, path string) *URLShortenerHTTPService {
+func NewURLShortenerHTTPService(shortener model.Shortener, host string, path string) *URLShortenerHTTPService {
 	var service = new(URLShortenerHTTPService)
 	service.Shortener = shortener
 	service.Host = host
@@ -24,7 +24,7 @@ func NewURLShortenerHTTPService(shortener Shortener, host string, path string) *
 func (service *URLShortenerHTTPService) Execute() error {
 	var router = chi.NewRouter()
 	router.Route(service.Path, func(router chi.Router) {
-		var shortener = NewURLShortener(
+		var shortener = model.NewURLShortener(
 			service.Shortener,
 			service.Host+service.Path,
 		)

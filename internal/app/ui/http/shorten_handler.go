@@ -4,15 +4,15 @@ import (
 	"io"
 	"net/http"
 
-	. "github.com/kerelape/urlshortener/internal/app/model"
+	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
 type ShortenHandler struct {
-	Shortener Shortener
+	Shortener model.Shortener
 }
 
 // Return new ShortenHandler.
-func NewShortenHandler(shortener Shortener) *ShortenHandler {
+func NewShortenHandler(shortener model.Shortener) *ShortenHandler {
 	var handler = new(ShortenHandler)
 	handler.Shortener = shortener
 	return handler
