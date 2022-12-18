@@ -7,7 +7,7 @@ import (
 )
 
 func TestFakeDatabase_Put(t *testing.T) {
-	require.Equal(t, uint(1), new(FakeDatabase).Put(""))
+	require.Equal(t, uint(0), new(FakeDatabase).Put(""))
 }
 
 func TestFakeDatabase_Get(t *testing.T) {
