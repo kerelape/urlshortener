@@ -15,17 +15,11 @@ type URLShortenerHTTPService struct {
 	Log       model.Log
 }
 
-func NewURLShortenerHTTPService(
-	shortener model.Shortener,
-	host string,
-	path string,
-	log model.Log,
-) *URLShortenerHTTPService {
+func NewURLShortenerHTTPService(shortener model.Shortener, host string, path string) *URLShortenerHTTPService {
 	return &URLShortenerHTTPService{
 		Shortener: shortener,
 		Host:      host,
 		Path:      path,
-		Log:       log,
 	}
 }
 
@@ -52,7 +46,6 @@ func (service *URLShortenerHTTPService) Execute() error {
 			),
 		)
 	})
-	service.Log.WriteInfo("Started shortener service")
 	return http.ListenAndServe(service.Host, router)
 }
 
