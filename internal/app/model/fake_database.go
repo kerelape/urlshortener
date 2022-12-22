@@ -8,7 +8,7 @@ type FakeDatabase struct {
 
 // Return new FakeDatabase.
 func NewFakeDatabase() *FakeDatabase {
-	return new(FakeDatabase)
+	return &FakeDatabase{}
 }
 
 func (database *FakeDatabase) Put(value string) uint {

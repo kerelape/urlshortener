@@ -13,9 +13,9 @@ type ShortenHandler struct {
 
 // Return new ShortenHandler.
 func NewShortenHandler(shortener model.Shortener) *ShortenHandler {
-	var handler = new(ShortenHandler)
-	handler.Shortener = shortener
-	return handler
+	return &ShortenHandler{
+		Shortener: shortener,
+	}
 }
 
 func (handler *ShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

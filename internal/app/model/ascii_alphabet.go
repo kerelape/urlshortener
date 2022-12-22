@@ -6,10 +6,10 @@ type ASCIIAlphabet struct {
 }
 
 func NewASCIIAlphabet(min uint8, max uint8) *ASCIIAlphabet {
-	var alphabet = new(ASCIIAlphabet)
-	alphabet.Min = min
-	alphabet.Max = max
-	return alphabet
+	return &ASCIIAlphabet{
+		Min: min,
+		Max: max,
+	}
 }
 
 func (alphabet *ASCIIAlphabet) Size() uint {

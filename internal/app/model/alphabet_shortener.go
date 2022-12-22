@@ -8,10 +8,10 @@ type AlphabetShortener struct {
 }
 
 func NewAlphabetShortener(database Database, alphabet Alphabet) *AlphabetShortener {
-	var shortener = new(AlphabetShortener)
-	shortener.Database = database
-	shortener.Alphabet = alphabet
-	return shortener
+	return &AlphabetShortener{
+		Database: database,
+		Alphabet: alphabet,
+	}
 }
 
 func (shortener *AlphabetShortener) Shorten(origin string) string {

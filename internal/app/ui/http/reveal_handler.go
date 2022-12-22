@@ -13,10 +13,10 @@ type RevealHandler struct {
 
 // Return new RevealHandler.
 func NewRevealHandler(shortener model.Shortener, parser RevealRequestParser) *RevealHandler {
-	var handler = new(RevealHandler)
-	handler.Shortener = shortener
-	handler.Parser = parser
-	return handler
+	return &RevealHandler{
+		Shortener: shortener,
+		Parser:    parser,
+	}
 }
 
 func (handler *RevealHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

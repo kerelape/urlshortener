@@ -11,9 +11,9 @@ type ChiRevealRequestParser struct {
 }
 
 func NewChiRevealRequestParser(shortURLParamName string) *ChiRevealRequestParser {
-	var parser = new(ChiRevealRequestParser)
-	parser.ShortURLParamName = shortURLParamName
-	return parser
+	return &ChiRevealRequestParser{
+		ShortURLParamName: shortURLParamName,
+	}
 }
 
 func (parser *ChiRevealRequestParser) ParseShortURL(request *http.Request) string {

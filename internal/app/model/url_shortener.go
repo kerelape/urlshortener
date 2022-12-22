@@ -8,10 +8,10 @@ type URLShortener struct {
 }
 
 func NewURLShortener(origin Shortener, baseURL string) *URLShortener {
-	var shortener = new(URLShortener)
-	shortener.Shortener = origin
-	shortener.BaseURL = baseURL
-	return shortener
+	return &URLShortener{
+		Shortener: origin,
+		BaseURL:   baseURL,
+	}
 }
 
 func (shortener *URLShortener) Shorten(origin string) string {
