@@ -11,8 +11,11 @@ func TestFakeDatabase_Put(t *testing.T) {
 }
 
 func TestFakeDatabase_Get(t *testing.T) {
-	var db = new(FakeDatabase)
+	var db = NewFakeDatabase()
 	var r, err = db.Get(db.Put("Hello, World!"))
 	require.Nil(t, err)
 	require.Equal(t, "Hello, World!", r)
+	r, err = db.Get(92)
+	require.NotNil(t, err)
+	require.Equal(t, "", r)
 }
