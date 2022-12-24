@@ -6,7 +6,6 @@ import (
 
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/ui"
-	"github.com/kerelape/urlshortener/internal/app/ui/http"
 )
 
 const (
@@ -32,7 +31,7 @@ func main() {
 		log,
 	)
 	var service = ui.NewVerboseService(
-		http.NewURLShortenerHTTPService(shortener, Host, Path),
+		ui.NewURLShortenerHTTPService(shortener, Host, Path),
 		"HTTP URL Shortener",
 		log,
 	)
