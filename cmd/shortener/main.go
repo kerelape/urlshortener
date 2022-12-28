@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
@@ -33,15 +31,5 @@ func main() {
 		model.NewAlphabetShortener(database, alphabet),
 		log,
 	)
-	var router = chi.NewRouter()
-	router.Mount(
-		"/",
-		ui.URLShortener(
-			model.NewURLShortener(
-				shortener,
-				fmt.Sprintf("http://%s%s", Host, Path),
-			),
-		),
-	)
-	http.ListenAndServe(Host, router)
+	http.ListenAndServe(Host, ui.URLShortenerApp(shortener, Host, Path))
 }

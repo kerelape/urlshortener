@@ -9,6 +9,13 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
+func URLShortenerApp(shortener model.Shortener, host string, path string) http.Handler {
+	var app = chi.NewRouter()
+	var urlShortener = model.NewURLShortener(shortener, fmt.Sprintf("http://%s%s", host, path))
+	app.Mount(path, URLShortener(urlShortener))
+	return app
+}
+
 func URLShortener(shortener model.Shortener) http.Handler {
 	var router = chi.NewRouter()
 	router.Get("/{short}", revealHandler(shortener))
