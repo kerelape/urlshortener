@@ -19,17 +19,18 @@ func main() {
 		model.NewWriterLog(os.Stdout, os.Stderr),
 		time.UnixDate,
 	)
-	var database = model.NewFakeDatabase()
-	var alphabet = model.NewJoinedAlphabet(
-		model.NewASCIIAlphabet(48, 57),
-		model.NewJoinedAlphabet(
-			model.NewASCIIAlphabet(65, 90),
-			model.NewASCIIAlphabet(97, 122),
-		),
-	)
 	var shortener = model.NewVerboseShortener(
-		model.NewAlphabetShortener(database, alphabet),
+		model.NewAlphabetShortener(
+			model.NewFakeDatabase(),
+			model.NewBase62Alphabet(),
+		),
 		log,
 	)
-	http.ListenAndServe(Host, ui.URLShortenerApp(shortener, Host, Path))
+	var app = ui.NewApp(
+		model.NewURLShortener(
+			shortener,
+			"http://"+Host+Path,
+		),
+	)
+	http.ListenAndServe(Host, app.Route())
 }
