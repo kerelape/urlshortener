@@ -10,29 +10,29 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
-type Api struct {
+type API struct {
 	shortener model.Shortener
 }
 
-type ApiRequest struct {
-	Url string `json:"url" valid:"url"`
+type APIRequest struct {
+	URL string `json:"url" valid:"url"`
 }
 
-type ApiResponse struct {
+type APIResponse struct {
 	Result string `json:"result"`
 }
 
-func NewApi(shortener model.Shortener) *Api {
-	return &Api{shortener}
+func NewAPI(shortener model.Shortener) *API {
+	return &API{shortener}
 }
 
-func (api *Api) Route() http.Handler {
+func (api *API) Route() http.Handler {
 	var router = chi.NewRouter()
 	router.Post("/shorten", api.handleShorten)
 	return router
 }
 
-func (api *Api) handleShorten(w http.ResponseWriter, r *http.Request) {
+func (api *API) handleShorten(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "Invalid content type", http.StatusBadRequest)
 		return
@@ -42,14 +42,14 @@ func (api *Api) handleShorten(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, readBodyError.Error(), http.StatusBadRequest)
 		return
 	}
-	var req ApiRequest
+	var req APIRequest
 	var unmarshalError = json.Unmarshal(body, &req)
 	if unmarshalError != nil {
 		http.Error(w, unmarshalError.Error(), http.StatusBadRequest)
 		return
 	}
-	var shortURL = api.shortener.Shorten(req.Url)
-	var resp, marhsalRespError = json.Marshal(ApiResponse{Result: shortURL})
+	var shortURL = api.shortener.Shorten(req.URL)
+	var resp, marhsalRespError = json.Marshal(APIResponse{Result: shortURL})
 	if marhsalRespError != nil {
 		http.Error(w, marhsalRespError.Error(), http.StatusInternalServerError)
 		return
