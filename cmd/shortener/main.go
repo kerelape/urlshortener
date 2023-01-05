@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
@@ -26,11 +27,9 @@ func main() {
 		),
 		log,
 	)
-	var app = ui.NewApp(
-		model.NewURLShortener(
-			shortener,
-			"http://"+Host+Path,
-		),
-	)
-	http.ListenAndServe(Host, app.Route())
+	var urlShortener = model.NewURLShortener(shortener, "http://"+Host+Path)
+	var service = chi.NewRouter()
+	service.Mount("/", ui.NewApp(urlShortener).Route())
+	service.Mount("/api", ui.NewApi(urlShortener).Route())
+	http.ListenAndServe(Host, service)
 }
