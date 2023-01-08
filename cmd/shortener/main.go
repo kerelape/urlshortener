@@ -11,8 +11,12 @@ import (
 )
 
 const (
-	Host = "localhost:8080"
-	Path = "/"
+	DefaultHost = "localhost:8080"
+	Path        = "/"
+)
+
+const (
+	HostEnvironment = "SERVER_ADRESS"
 )
 
 func main() {
@@ -27,9 +31,13 @@ func main() {
 		),
 		log,
 	)
-	var urlShortener = model.NewURLShortener(shortener, "http://"+Host+Path)
+	var host = os.Getenv(HostEnvironment)
+	if host == "" {
+		host = DefaultHost
+	}
+	var urlShortener = model.NewURLShortener(shortener, "http://"+host+Path)
 	var service = chi.NewRouter()
 	service.Mount("/", ui.NewApp(urlShortener).Route())
 	service.Mount("/api", ui.NewAPI(urlShortener).Route())
-	http.ListenAndServe(Host, service)
+	http.ListenAndServe(DefaultHost, service)
 }
