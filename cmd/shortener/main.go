@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/ui"
@@ -15,9 +16,10 @@ const (
 	Path        = "/"
 )
 
-const (
-	HostEnvironment = "SERVER_ADRESS"
-)
+type config struct {
+	ServerAddress string `env:"SERVER_ADDRESS"`
+	BaseURL       string `env:"USER"`
+}
 
 func main() {
 	var log = model.NewFormattedLog(
@@ -31,11 +33,15 @@ func main() {
 		),
 		log,
 	)
-	var host = os.Getenv(HostEnvironment)
-	if host == "" {
-		host = DefaultHost
+	var conf config
+	var parseError = env.Parse(&conf)
+	if parseError != nil {
+		panic(parseError)
 	}
-	var urlShortener = model.NewURLShortener(shortener, "http://"+host+Path)
+	log.WriteInfo(conf.BaseURL)
+	log.WriteInfo(conf.ServerAddress)
+	return
+	var urlShortener = model.NewURLShortener(shortener, "http://"+conf.BaseURL+Path)
 	var service = chi.NewRouter()
 	service.Mount("/", ui.NewApp(urlShortener).Route())
 	service.Mount("/api", ui.NewAPI(urlShortener).Route())
