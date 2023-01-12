@@ -40,7 +40,7 @@ func main() {
 	}
 	log.WriteInfo("BASE_URL " + conf.BaseURL)
 	log.WriteInfo("SERVER_ADDRESS" + conf.ServerAddress)
-	var urlShortener = model.NewURLShortener(shortener, "http://"+conf.BaseURL+Path)
+	var urlShortener = model.NewURLShortener(shortener, "http://"+DefaultHost+Path)
 	var service = chi.NewRouter()
 	service.Mount("/", ui.NewApp(urlShortener).Route())
 	service.Mount("/api", ui.NewAPI(urlShortener).Route())
