@@ -12,6 +12,7 @@ func NewURLShortener(origin Shortener, baseURL string, path string) *URLShortene
 	return &URLShortener{
 		Shortener: origin,
 		BaseURL:   baseURL,
+		Path:      path,
 	}
 }
 
