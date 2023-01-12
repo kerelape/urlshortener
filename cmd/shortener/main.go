@@ -18,7 +18,7 @@ const (
 
 type config struct {
 	ServerAddress string `env:"SERVER_ADDRESS"`
-	BaseURL       string `env:"USER"`
+	BaseURL       string `env:"BASE_URL"`
 }
 
 func main() {
@@ -38,8 +38,8 @@ func main() {
 	if parseError != nil {
 		panic(parseError)
 	}
-	log.WriteInfo(conf.BaseURL)
-	log.WriteInfo(conf.ServerAddress)
+	log.WriteInfo("BASE_URL " + conf.BaseURL)
+	log.WriteInfo("SERVER_ADDRESS" + conf.ServerAddress)
 	var urlShortener = model.NewURLShortener(shortener, "http://"+conf.BaseURL+Path)
 	var service = chi.NewRouter()
 	service.Mount("/", ui.NewApp(urlShortener).Route())
