@@ -11,16 +11,6 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
-const (
-	DefaultHost = "localhost:8080"
-	Path        = "/"
-)
-
-type config struct {
-	ServerAddress string `env:"SERVER_ADDRESS"`
-	BaseURL       string `env:"BASE_URL"`
-}
-
 func main() {
 	var log = model.NewFormattedLog(
 		model.NewWriterLog(os.Stdout, os.Stderr),
@@ -38,11 +28,16 @@ func main() {
 	if parseError != nil {
 		panic(parseError)
 	}
-	log.WriteInfo("BASE_URL " + conf.BaseURL)
-	log.WriteInfo("SERVER_ADDRESS" + conf.ServerAddress)
-	var urlShortener = model.NewURLShortener(shortener, "http://"+DefaultHost+Path)
+	var urlShortener = model.NewURLShortener(shortener, conf.BaseURL, conf.ShortenerPath)
 	var service = chi.NewRouter()
-	service.Mount("/", ui.NewApp(urlShortener).Route())
-	service.Mount("/api", ui.NewAPI(urlShortener).Route())
-	http.ListenAndServe(DefaultHost, service)
+	service.Mount(conf.ShortenerPath, ui.NewApp(urlShortener).Route())
+	service.Mount(conf.APIPath, ui.NewAPI(urlShortener).Route())
+	http.ListenAndServe(conf.ServerAddress, service)
+}
+
+type config struct {
+	ServerAddress string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	BaseURL       string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	ShortenerPath string `env:"SHORTENER_PATH" envDefault:"/"`
+	APIPath       string `env:"API_PATH" envDefault:"/api"`
 }
