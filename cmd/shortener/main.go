@@ -8,6 +8,7 @@ import (
 
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
@@ -117,6 +118,7 @@ func initDatabase(config *Config) (model.Database, error) {
 
 func initService(model model.Shortener, config *Config) http.Handler {
 	var router = chi.NewRouter()
+	router.Use(middleware.Compress(5))
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
 	router.Mount(config.APIPath, ui.NewAPI(model).Route())
 	return router
