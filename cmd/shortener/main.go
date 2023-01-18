@@ -11,58 +11,87 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
-func main() {
-	var conf config
-	var parseError = env.Parse(&conf)
-	if parseError != nil {
-		panic(parseError)
+var (
+	Service http.Handler
+	Address string
+)
+
+func init() {
+	var config, configError = initConfig()
+	if configError != nil {
+		panic(configError)
 	}
-
-	var log = model.NewFormattedLog(
-		model.NewWriterLog(os.Stdout, os.Stderr),
-		time.UnixDate,
-	)
-
-	var database model.Database
-	if conf.FileStoragePath == "" {
-		database = model.NewFakeDatabase()
-	} else {
-		var file, openFileError = os.OpenFile(
-			conf.FileStoragePath,
-			os.O_RDWR|os.O_CREATE,
-			0644,
-		)
-		if openFileError != nil {
-			panic(openFileError)
-		}
-		defer (func() {
-			var closeError = file.Close()
-			if closeError != nil {
-				panic(closeError)
-			}
-		})()
-		database = model.NewFileDatabase(file)
+	var database, databaseError = initDatabase(&config)
+	if databaseError != nil {
+		panic(databaseError)
 	}
-
-	var shortener = model.NewVerboseShortener(
-		model.NewAlphabetShortener(
-			database,
-			model.NewBase62Alphabet(),
-		),
-		log,
-	)
-
-	var urlShortener = model.NewURLShortener(shortener, conf.BaseURL, conf.ShortenerPath)
-	var service = chi.NewRouter()
-	service.Mount(conf.ShortenerPath, ui.NewApp(urlShortener).Route())
-	service.Mount(conf.APIPath, ui.NewAPI(urlShortener).Route())
-	http.ListenAndServe(conf.ServerAddress, service)
+	var log = initLog()
+	var shortener = initShortener(database, log, &config)
+	var service = initService(shortener, &config)
+	Address = config.ServerAddress
+	Service = service
 }
 
-type config struct {
+func main() {
+	http.ListenAndServe(Address, Service)
+}
+
+type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	ShortenerPath   string `env:"SHORTENER_PATH" envDefault:"/"`
 	APIPath         string `env:"API_PATH" envDefault:"/api"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+}
+
+func initConfig() (Config, error) {
+	var config Config
+	var parseError = env.Parse(&config)
+	return config, parseError
+}
+
+func initShortener(database model.Database, log model.Log, config *Config) model.Shortener {
+	return model.NewURLShortener(
+		model.NewVerboseShortener(
+			model.NewAlphabetShortener(
+				database,
+				model.NewBase62Alphabet(),
+			),
+			log,
+		),
+		config.BaseURL,
+		config.ShortenerPath,
+	)
+}
+
+func initLog() model.Log {
+	return model.NewFormattedLog(
+		model.NewWriterLog(os.Stdout, os.Stderr),
+		time.UnixDate,
+	)
+}
+
+func initDatabase(config *Config) (model.Database, error) {
+	var database model.Database
+	if config.FileStoragePath == "" {
+		database = model.NewFakeDatabase()
+	} else {
+		var file, openFileError = os.OpenFile(
+			config.FileStoragePath,
+			os.O_RDWR|os.O_CREATE,
+			0644,
+		)
+		if openFileError != nil {
+			return nil, openFileError
+		}
+		database = model.NewFileDatabase(file)
+	}
+	return database, nil
+}
+
+func initService(model model.Shortener, config *Config) http.Handler {
+	var router = chi.NewRouter()
+	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
+	router.Mount(config.APIPath, ui.NewAPI(model).Route())
+	return router
 }
