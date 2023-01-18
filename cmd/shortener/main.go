@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 	"os"
 	"time"
@@ -37,17 +38,42 @@ func main() {
 }
 
 type Config struct {
-	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	ShortenerPath   string `env:"SHORTENER_PATH" envDefault:"/"`
-	APIPath         string `env:"API_PATH" envDefault:"/api"`
+	ServerAddress   string `env:"SERVER_ADDRESS"`
+	BaseURL         string `env:"BASE_URL"`
+	ShortenerPath   string `env:"SHORTENER_PATH"`
+	APIPath         string `env:"API_PATH"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 }
 
 func initConfig() (Config, error) {
-	var config Config
-	var parseError = env.Parse(&config)
-	return config, parseError
+	var environment Config
+	var parseError = env.Parse(&environment)
+	if parseError != nil {
+		return environment, parseError
+	}
+	var flags = Config{}
+	flag.StringVar(&flags.ServerAddress, "a", "localhost:8080", "Server address")
+	flag.StringVar(&flags.BaseURL, "b", "http://localhost:8080", "Base URL")
+	flag.StringVar(&flags.FileStoragePath, "f", "/var/cache/urlshortener.db", "Path file DB")
+	flag.StringVar(&flags.APIPath, "api-path", "/api", "API root")
+	flag.StringVar(&flags.ShortenerPath, "app-path", "/", "Shortener root")
+	flag.Parse()
+	if environment.ServerAddress == "" {
+		environment.ServerAddress = flags.ServerAddress
+	}
+	if environment.BaseURL == "" {
+		environment.BaseURL = flags.BaseURL
+	}
+	if environment.FileStoragePath == "" {
+		environment.FileStoragePath = flags.FileStoragePath
+	}
+	if environment.APIPath == "" {
+		environment.APIPath = flags.APIPath
+	}
+	if environment.ShortenerPath == "" {
+		environment.ShortenerPath = flags.ShortenerPath
+	}
+	return environment, parseError
 }
 
 func initShortener(database model.Database, log model.Log, config *Config) model.Shortener {
