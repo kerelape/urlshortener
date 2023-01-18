@@ -48,7 +48,11 @@ func (api *API) handleShorten(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, unmarshalError.Error(), http.StatusBadRequest)
 		return
 	}
-	var shortURL = api.shortener.Shorten(req.URL)
+	var shortURL, shortenError = api.shortener.Shorten(req.URL)
+	if shortenError != nil {
+		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
+		return
+	}
 	var resp, marhsalRespError = json.Marshal(APIResponse{Result: shortURL})
 	if marhsalRespError != nil {
 		http.Error(w, marhsalRespError.Error(), http.StatusInternalServerError)

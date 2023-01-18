@@ -48,7 +48,11 @@ func (app *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var short = app.Shortener.Shorten(url)
+	var short, shortenError = app.Shortener.Shorten(url)
+	if shortenError != nil {
+		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(short)))
 	w.WriteHeader(http.StatusCreated)
 	io.WriteString(w, short)

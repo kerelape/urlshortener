@@ -11,9 +11,9 @@ func NewFakeDatabase() *FakeDatabase {
 	return &FakeDatabase{}
 }
 
-func (database *FakeDatabase) Put(value string) uint {
+func (database *FakeDatabase) Put(value string) (uint, error) {
 	database.Values = append(database.Values, value)
-	return uint(len(database.Values) - 1)
+	return uint(len(database.Values) - 1), nil
 }
 
 func (database *FakeDatabase) Get(id uint) (string, error) {

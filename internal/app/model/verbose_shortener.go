@@ -14,12 +14,16 @@ func NewVerboseShortener(origin Shortener, log Log) *VerboseShortener {
 	}
 }
 
-func (shortener *VerboseShortener) Shorten(origin string) string {
-	var shortened = shortener.Origin.Shorten(origin)
-	shortener.Log.WriteInfo(
-		fmt.Sprintf("Shorted \"%s\" to \"%s\"", origin, shortened),
-	)
-	return shortened
+func (shortener *VerboseShortener) Shorten(origin string) (string, error) {
+	var shortened, shortenError = shortener.Origin.Shorten(origin)
+	if shortenError != nil {
+		shortener.Log.WriteFailure("Failed to shorten: " + shortenError.Error())
+	} else {
+		shortener.Log.WriteInfo(
+			fmt.Sprintf("Shorted \"%s\" to \"%s\"", origin, shortened),
+		)
+	}
+	return shortened, shortenError
 }
 
 func (shortener *VerboseShortener) Reveal(short string) (string, error) {

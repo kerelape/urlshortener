@@ -7,13 +7,18 @@ import (
 )
 
 func TestFakeDatabase_Put(t *testing.T) {
-	require.Equal(t, uint(0), new(FakeDatabase).Put(""))
+	var db = NewFakeDatabase()
+	var id, putError = db.Put("")
+	require.Nil(t, putError)
+	require.Equal(t, uint(0), id)
 }
 
 func TestFakeDatabase_Get(t *testing.T) {
 	var db = NewFakeDatabase()
-	var r, err = db.Get(db.Put("Hello, World!"))
+	var id, putError = db.Put("Hello, World!")
+	var r, err = db.Get(id)
 	require.Nil(t, err)
+	require.Nil(t, putError)
 	require.Equal(t, "Hello, World!", r)
 	r, err = db.Get(92)
 	require.NotNil(t, err)

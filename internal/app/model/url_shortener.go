@@ -16,8 +16,9 @@ func NewURLShortener(origin Shortener, baseURL string, path string) *URLShortene
 	}
 }
 
-func (shortener *URLShortener) Shorten(origin string) string {
-	return shortener.BaseURL + shortener.Path + shortener.Shortener.Shorten(origin)
+func (shortener *URLShortener) Shorten(origin string) (string, error) {
+	var short, shortenError = shortener.Shortener.Shorten(origin)
+	return shortener.BaseURL + shortener.Path + short, shortenError
 }
 
 func (shortener *URLShortener) Reveal(shortened string) (string, error) {
