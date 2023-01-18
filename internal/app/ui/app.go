@@ -34,6 +34,7 @@ func (app *App) handleReveal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Add("Location", origin)
+	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
@@ -54,6 +55,7 @@ func (app *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(short)))
+	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	io.WriteString(w, short)
 }
