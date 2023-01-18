@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/flate"
 	"flag"
 	"net/http"
 	"os"
@@ -118,7 +119,7 @@ func initDatabase(config *Config) (model.Database, error) {
 
 func initService(model model.Shortener, config *Config) http.Handler {
 	var router = chi.NewRouter()
-	router.Use(middleware.Compress(5, "application/json", "text/plain"))
+	router.Use(middleware.NewCompressor(flate.DefaultCompression).Handler)
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
 	router.Mount(config.APIPath, ui.NewAPI(model).Route())
 	return router
