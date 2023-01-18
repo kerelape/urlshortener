@@ -119,7 +119,14 @@ func initDatabase(config *Config) (model.Database, error) {
 
 func initService(model model.Shortener, config *Config) http.Handler {
 	var router = chi.NewRouter()
+	router.Use(middleware.Logger)
 	router.Use(middleware.Compress(gzip.BestCompression))
+	router.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			println(r.Header.Get("Content-Encoding"))
+			next.ServeHTTP(w, r)
+		})
+	})
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
 	router.Mount(config.APIPath, ui.NewAPI(model).Route())
 	return router
