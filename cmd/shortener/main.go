@@ -30,7 +30,7 @@ func init() {
 	}
 	var log = initLog()
 	var shortener = initShortener(database, log, &config)
-	var service = initService(shortener, &config)
+	var service = initService(shortener, &config, log)
 	Address = config.ServerAddress
 	Service = service
 }
