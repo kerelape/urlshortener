@@ -117,8 +117,15 @@ func initDatabase(config *Config) (model.Database, error) {
 	return database, nil
 }
 
-func initService(model model.Shortener, config *Config) http.Handler {
+func initService(model model.Shortener, config *Config, log model.Log) http.Handler {
 	var router = chi.NewRouter()
+	router.Use(middleware.Logger)
+	router.Use(func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.WriteInfo("content encoding: " + r.Header.Get("Content-Encoding"))
+			h.ServeHTTP(w, r)
+		})
+	})
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
 	router.Mount(config.APIPath, ui.NewAPI(model).Route())
