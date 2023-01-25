@@ -127,6 +127,7 @@ func initService(model model.Shortener, config *Config, log model.Log) http.Hand
 		})
 	})
 	router.Use(middleware.Compress(gzip.BestCompression))
+	router.Use(ui.Decompress())
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
 	router.Mount(config.APIPath, ui.NewAPI(model).Route())
 	return router
