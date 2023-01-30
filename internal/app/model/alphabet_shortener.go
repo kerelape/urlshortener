@@ -1,13 +1,17 @@
 package model
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/kerelape/urlshortener/internal/app/model/storage"
+)
 
 type AlphabetShortener struct {
-	Database Database
+	Database storage.Database
 	Alphabet Alphabet
 }
 
-func NewAlphabetShortener(database Database, alphabet Alphabet) *AlphabetShortener {
+func NewAlphabetShortener(database storage.Database, alphabet Alphabet) *AlphabetShortener {
 	return &AlphabetShortener{
 		Database: database,
 		Alphabet: alphabet,

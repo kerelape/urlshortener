@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kerelape/urlshortener/internal/app/model"
+	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
@@ -78,7 +79,7 @@ func initConfig() (Config, error) {
 	return environment, parseError
 }
 
-func initShortener(database model.Database, log model.Log, config *Config) model.Shortener {
+func initShortener(database storage.Database, log model.Log, config *Config) model.Shortener {
 	return model.NewURLShortener(
 		model.NewVerboseShortener(
 			model.NewAlphabetShortener(
@@ -99,10 +100,10 @@ func initLog() model.Log {
 	)
 }
 
-func initDatabase(config *Config) (model.Database, error) {
-	var database model.Database
+func initDatabase(config *Config) (storage.Database, error) {
+	var database storage.Database
 	if config.FileStoragePath == "" {
-		database = model.NewFakeDatabase()
+		database = storage.NewFakeDatabase()
 	} else {
 		var file, openFileError = os.OpenFile(
 			config.FileStoragePath,
@@ -112,7 +113,7 @@ func initDatabase(config *Config) (model.Database, error) {
 		if openFileError != nil {
 			return nil, openFileError
 		}
-		database = model.NewFileDatabase(file)
+		database = storage.NewFileDatabase(file)
 	}
 	return database, nil
 }
