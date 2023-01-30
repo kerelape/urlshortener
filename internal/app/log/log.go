@@ -1,4 +1,4 @@
-package model
+package log
 
 type Log interface {
 	WriteInfo(message string)

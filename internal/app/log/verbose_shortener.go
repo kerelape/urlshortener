@@ -1,13 +1,17 @@
-package model
+package log
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/kerelape/urlshortener/internal/app/model"
+)
 
 type VerboseShortener struct {
-	Origin Shortener
+	Origin model.Shortener
 	Log    Log
 }
 
-func NewVerboseShortener(origin Shortener, log Log) *VerboseShortener {
+func NewVerboseShortener(origin model.Shortener, log Log) *VerboseShortener {
 	return &VerboseShortener{
 		Origin: origin,
 		Log:    log,
