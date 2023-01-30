@@ -10,6 +10,7 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	logging "github.com/kerelape/urlshortener/internal/app/log"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
@@ -79,9 +80,9 @@ func initConfig() (Config, error) {
 	return environment, parseError
 }
 
-func initShortener(database storage.Database, log model.Log, config *Config) model.Shortener {
+func initShortener(database storage.Database, log logging.Log, config *Config) model.Shortener {
 	return model.NewURLShortener(
-		model.NewVerboseShortener(
+		logging.NewVerboseShortener(
 			model.NewAlphabetShortener(
 				database,
 				model.NewBase62Alphabet(),
@@ -93,9 +94,9 @@ func initShortener(database storage.Database, log model.Log, config *Config) mod
 	)
 }
 
-func initLog() model.Log {
-	return model.NewFormattedLog(
-		model.NewWriterLog(os.Stdout, os.Stderr),
+func initLog() logging.Log {
+	return logging.NewFormattedLog(
+		logging.NewWriterLog(os.Stdout, os.Stderr),
 		time.UnixDate,
 	)
 }
@@ -118,7 +119,7 @@ func initDatabase(config *Config) (storage.Database, error) {
 	return database, nil
 }
 
-func initService(model model.Shortener, config *Config, log model.Log) http.Handler {
+func initService(model model.Shortener, config *Config, log logging.Log) http.Handler {
 	var router = chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(func(h http.Handler) http.Handler {
