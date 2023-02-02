@@ -106,15 +106,11 @@ func initDatabase(config *Config) (storage.Database, error) {
 	if config.FileStoragePath == "" {
 		database = storage.NewFakeDatabase()
 	} else {
-		var file, openFileError = os.OpenFile(
-			config.FileStoragePath,
-			os.O_RDWR|os.O_CREATE,
-			0644,
-		)
-		if openFileError != nil {
-			return nil, openFileError
+		var fileDatabase, openFileDatabaseError = storage.OpenFileDatabase(config.FileStoragePath, true, 0644)
+		if openFileDatabaseError != nil {
+			return nil, openFileDatabaseError
 		}
-		database = storage.NewFileDatabase(file)
+		database = fileDatabase
 	}
 	return database, nil
 }
