@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-const FileDatabaseChunkSize = 2048
+const fileDatabaseChunkSize = 2048
 
 var ErrTooLargeValue = errors.New("too large value")
 
@@ -19,7 +19,7 @@ type FileDatabase struct {
 }
 
 func NewFileDatabase(file *os.File) *FileDatabase {
-	return &FileDatabase{file: file, buffer: make([]byte, FileDatabaseChunkSize)}
+	return &FileDatabase{file: file, buffer: make([]byte, fileDatabaseChunkSize)}
 }
 
 func OpenFileDatabase(name string, create bool, permission fs.FileMode) (*FileDatabase, error) {
@@ -41,20 +41,20 @@ func (database *FileDatabase) Put(value string) (uint, error) {
 	if statError != nil {
 		return 0, statError
 	}
-	if len(value) > FileDatabaseChunkSize {
+	if len(value) > fileDatabaseChunkSize {
 		return 0, ErrTooLargeValue
 	}
-	var id = stat.Size() / FileDatabaseChunkSize
-	var buffer = append([]byte(value), make([]byte, FileDatabaseChunkSize-len(value))...)
-	var _, writeError = database.file.WriteAt(buffer, int64(id*FileDatabaseChunkSize))
+	var id = stat.Size() / fileDatabaseChunkSize
+	var buffer = append([]byte(value), make([]byte, fileDatabaseChunkSize-len(value))...)
+	var _, writeError = database.file.WriteAt(buffer, int64(id*fileDatabaseChunkSize))
 	return uint(id), writeError
 }
 
 func (database *FileDatabase) Get(id uint) (string, error) {
 	database.rw.Lock()
 	defer database.rw.Unlock()
-	var buffer = make([]byte, FileDatabaseChunkSize)
-	var _, readError = database.file.ReadAt(buffer, int64(id)*FileDatabaseChunkSize)
+	var buffer = make([]byte, fileDatabaseChunkSize)
+	var _, readError = database.file.ReadAt(buffer, int64(id)*fileDatabaseChunkSize)
 	if readError != nil {
 		return "", readError
 	}
