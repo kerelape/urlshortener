@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"errors"
+	"io/fs"
 	"os"
 	"sync"
 )
@@ -19,6 +20,18 @@ type FileDatabase struct {
 
 func NewFileDatabase(file *os.File) *FileDatabase {
 	return &FileDatabase{file: file, buffer: make([]byte, FileDatabaseChunkSize)}
+}
+
+func OpenFileDatabase(name string, create bool, permission fs.FileMode) (*FileDatabase, error) {
+	var flag = os.O_RDWR
+	if create {
+		flag |= os.O_CREATE
+	}
+	var file, openError = os.OpenFile(name, flag, permission)
+	if openError != nil {
+		return nil, openError
+	}
+	return NewFileDatabase(file), nil
 }
 
 func (database *FileDatabase) Put(value string) (uint, error) {
