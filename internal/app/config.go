@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"flag"
@@ -14,7 +14,7 @@ type Config struct {
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 }
 
-func initConfig() (Config, error) {
+func InitConfig() (Config, error) {
 	var environment Config
 	var parseError = env.Parse(&environment)
 	if parseError != nil {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/kerelape/urlshortener/internal/app"
 	logging "github.com/kerelape/urlshortener/internal/app/log"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
@@ -15,7 +16,7 @@ import (
 )
 
 func main() {
-	var config, configError = initConfig()
+	var config, configError = app.InitConfig()
 	if configError != nil {
 		panic(configError)
 	}
@@ -30,7 +31,7 @@ func main() {
 	http.ListenAndServe(address, service)
 }
 
-func initShortener(database storage.Database, log logging.Log, config *Config) model.Shortener {
+func initShortener(database storage.Database, log logging.Log, config *app.Config) model.Shortener {
 	return model.NewURLShortener(
 		logging.NewVerboseShortener(
 			model.NewAlphabetShortener(
@@ -51,7 +52,7 @@ func initLog() logging.Log {
 	)
 }
 
-func initDatabase(config *Config) (storage.Database, error) {
+func initDatabase(config *app.Config) (storage.Database, error) {
 	var database storage.Database
 	if config.FileStoragePath == "" {
 		database = storage.NewFakeDatabase()
@@ -65,7 +66,7 @@ func initDatabase(config *Config) (storage.Database, error) {
 	return database, nil
 }
 
-func initService(model model.Shortener, config *Config, log logging.Log) http.Handler {
+func initService(model model.Shortener, config *app.Config, log logging.Log) http.Handler {
 	var router = chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(func(h http.Handler) http.Handler {
