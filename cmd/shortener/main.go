@@ -16,12 +16,7 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
-var (
-	Service http.Handler
-	Address string
-)
-
-func init() {
+func main() {
 	var config, configError = initConfig()
 	if configError != nil {
 		panic(configError)
@@ -31,14 +26,10 @@ func init() {
 		panic(databaseError)
 	}
 	var log = initLog()
+	var address = config.ServerAddress
 	var shortener = initShortener(database, log, &config)
 	var service = initService(shortener, &config, log)
-	Address = config.ServerAddress
-	Service = service
-}
-
-func main() {
-	http.ListenAndServe(Address, Service)
+	http.ListenAndServe(address, service)
 }
 
 type Config struct {
