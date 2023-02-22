@@ -69,13 +69,6 @@ func initDatabase(config *app.Config) (storage.Database, error) {
 
 func initService(model model.Shortener, config *app.Config, log logging.Log) http.Handler {
 	var router = chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Use(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log.WriteInfo("content encoding: " + r.Header.Get("Content-Encoding"))
-			h.ServeHTTP(w, r)
-		})
-	})
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Use(ui.Decompress())
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
