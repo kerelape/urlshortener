@@ -13,6 +13,7 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
+	"github.com/kerelape/urlshortener/internal/app/ui/api"
 )
 
 func main() {
@@ -78,6 +79,9 @@ func initService(model model.Shortener, config *app.Config, log logging.Log) htt
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Use(ui.Decompress())
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
-	router.Mount(config.APIPath, ui.NewAPI(model).Route())
+	var api = api.NewAPI(
+		api.NewShortenAPI(model),
+	)
+	router.Mount(config.APIPath, api.Route())
 	return router
 }

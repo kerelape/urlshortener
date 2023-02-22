@@ -4,19 +4,16 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
 type API struct {
-	shortener model.Shortener
-	shorten   ui.Entry
+	shorten ui.Entry
 }
 
-func NewAPI(shortener model.Shortener) *API {
+func NewAPI(shorten ui.Entry) *API {
 	return &API{
-		shortener: shortener,
-		shorten:   NewShortenAPI(shortener),
+		shorten: shorten,
 	}
 }
 
