@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
@@ -25,6 +26,12 @@ type (
 
 func NewShortenAPI(shortener model.Shortener) *ShortenAPI {
 	return &ShortenAPI{shortener}
+}
+
+func (shorten *ShortenAPI) Route() http.Handler {
+	var router = chi.NewRouter()
+	router.Post("/", shorten.ServeHTTP)
+	return router
 }
 
 func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {

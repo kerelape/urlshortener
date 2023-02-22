@@ -8,13 +8,9 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
-const (
-	shortenPath string = "/shorten"
-)
-
 type API struct {
 	shortener model.Shortener
-	shorten   http.Handler
+	shorten   Entry
 }
 
 func NewAPI(shortener model.Shortener) *API {
@@ -26,6 +22,6 @@ func NewAPI(shortener model.Shortener) *API {
 
 func (api *API) Route() http.Handler {
 	var router = chi.NewRouter()
-	router.Post(shortenPath, api.shorten.ServeHTTP)
+	router.Mount("/shorten", api.shorten.Route())
 	return router
 }
