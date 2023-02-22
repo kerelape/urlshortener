@@ -1,22 +1,22 @@
-package ui
+package api
 
 import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kerelape/urlshortener/internal/api"
 	"github.com/kerelape/urlshortener/internal/app/model"
+	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
 type API struct {
 	shortener model.Shortener
-	shorten   Entry
+	shorten   ui.Entry
 }
 
 func NewAPI(shortener model.Shortener) *API {
 	return &API{
 		shortener: shortener,
-		shorten:   api.NewShortenAPI(shortener),
+		shorten:   NewShortenAPI(shortener),
 	}
 }
 
