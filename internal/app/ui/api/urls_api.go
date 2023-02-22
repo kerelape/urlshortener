@@ -6,14 +6,14 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type URLSAPI struct {
+type UserURLs struct {
 }
 
-func NewURLSAPI() *URLSAPI {
-	return &URLSAPI{}
+func NewUserURLs() *UserURLs {
+	return &UserURLs{}
 }
 
-func (api *URLSAPI) Route() http.Handler {
+func (api *UserURLs) Route() http.Handler {
 	var router = chi.NewRouter()
 	return router
 }

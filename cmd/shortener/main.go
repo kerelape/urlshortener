@@ -75,7 +75,7 @@ func initService(model model.Shortener, config *app.Config, log logging.Log) htt
 	var api = api.NewAPI(
 		api.NewShortenAPI(model),
 		api.NewUserAPI(
-			api.NewURLSAPI(),
+			api.NewUserURLs(),
 		),
 	)
 	router.Mount(config.APIPath, api.Route())
