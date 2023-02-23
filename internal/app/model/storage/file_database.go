@@ -8,21 +8,24 @@ import (
 	"sync"
 )
 
-const fileDatabaseChunkSize = 2048
-
 var ErrTooLargeValue = errors.New("too large value")
 
 type FileDatabase struct {
-	file   *os.File
-	rw     sync.Mutex
-	buffer []byte
+	file      *os.File
+	rw        sync.Mutex
+	buffer    []byte
+	chunkSize int
 }
 
-func NewFileDatabase(file *os.File) *FileDatabase {
-	return &FileDatabase{file: file, buffer: make([]byte, fileDatabaseChunkSize)}
+func NewFileDatabase(file *os.File, chunkSize int) *FileDatabase {
+	return &FileDatabase{
+		file:      file,
+		buffer:    make([]byte, chunkSize),
+		chunkSize: chunkSize,
+	}
 }
 
-func OpenFileDatabase(name string, create bool, permission fs.FileMode) (*FileDatabase, error) {
+func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSize int) (*FileDatabase, error) {
 	flag := os.O_RDWR
 	if create {
 		flag |= os.O_CREATE
@@ -31,7 +34,7 @@ func OpenFileDatabase(name string, create bool, permission fs.FileMode) (*FileDa
 	if openError != nil {
 		return nil, openError
 	}
-	return NewFileDatabase(file), nil
+	return NewFileDatabase(file, chunkSize), nil
 }
 
 func (database *FileDatabase) Put(value string) (uint, error) {
@@ -41,20 +44,20 @@ func (database *FileDatabase) Put(value string) (uint, error) {
 	if statError != nil {
 		return 0, statError
 	}
-	if len(value) > fileDatabaseChunkSize {
+	if len(value) > database.chunkSize {
 		return 0, ErrTooLargeValue
 	}
-	id := stat.Size() / fileDatabaseChunkSize
-	buffer := append([]byte(value), make([]byte, fileDatabaseChunkSize-len(value))...)
-	_, writeError := database.file.WriteAt(buffer, int64(id*fileDatabaseChunkSize))
+	id := stat.Size() / int64(database.chunkSize)
+	buffer := append([]byte(value), make([]byte, database.chunkSize-len(value))...)
+	_, writeError := database.file.WriteAt(buffer, id*int64(database.chunkSize))
 	return uint(id), writeError
 }
 
 func (database *FileDatabase) Get(id uint) (string, error) {
 	database.rw.Lock()
 	defer database.rw.Unlock()
-	buffer := make([]byte, fileDatabaseChunkSize)
-	_, readError := database.file.ReadAt(buffer, int64(id)*fileDatabaseChunkSize)
+	buffer := make([]byte, database.chunkSize)
+	_, readError := database.file.ReadAt(buffer, int64(int(id)*database.chunkSize))
 	if readError != nil {
 		return "", readError
 	}
