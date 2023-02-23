@@ -29,7 +29,7 @@ func NewShortenAPI(shortener model.Shortener) *ShortenAPI {
 }
 
 func (shorten *ShortenAPI) Route() http.Handler {
-	var router = chi.NewRouter()
+	router := chi.NewRouter()
 	router.Post("/", shorten.ServeHTTP)
 	return router
 }
@@ -39,23 +39,23 @@ func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid content type", http.StatusBadRequest)
 		return
 	}
-	var body, readBodyError = io.ReadAll(r.Body)
+	body, readBodyError := io.ReadAll(r.Body)
 	if readBodyError != nil {
 		http.Error(w, readBodyError.Error(), http.StatusBadRequest)
 		return
 	}
 	var req shortenRequest
-	var unmarshalError = json.Unmarshal(body, &req)
+	unmarshalError := json.Unmarshal(body, &req)
 	if unmarshalError != nil {
 		http.Error(w, unmarshalError.Error(), http.StatusBadRequest)
 		return
 	}
-	var shortURL, shortenError = shorten.shortener.Shorten(req.URL)
+	shortURL, shortenError := shorten.shortener.Shorten(req.URL)
 	if shortenError != nil {
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return
 	}
-	var resp, marhsalRespError = json.Marshal(shortenResponse{Result: shortURL})
+	resp, marhsalRespError := json.Marshal(shortenResponse{Result: shortURL})
 	if marhsalRespError != nil {
 		http.Error(w, marhsalRespError.Error(), http.StatusInternalServerError)
 		return

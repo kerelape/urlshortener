@@ -20,15 +20,15 @@ func NewApp(shortener model.Shortener) *App {
 }
 
 func (app *App) Route() http.Handler {
-	var router = chi.NewRouter()
+	router := chi.NewRouter()
 	router.Get(fmt.Sprintf("/{%s}", ShortURLParam), app.handleReveal)
 	router.Post("/", app.handleShorten)
 	return router
 }
 
 func (app *App) handleReveal(w http.ResponseWriter, r *http.Request) {
-	var short = chi.URLParam(r, ShortURLParam)
-	var origin, err = app.Shortener.Reveal(short)
+	short := chi.URLParam(r, ShortURLParam)
+	origin, err := app.Shortener.Reveal(short)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -39,17 +39,17 @@ func (app *App) handleReveal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) handleShorten(w http.ResponseWriter, r *http.Request) {
-	var origin, err = io.ReadAll(r.Body)
+	origin, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	var url = string(origin)
+	url := string(origin)
 	if len(url) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var short, shortenError = app.Shortener.Shorten(url)
+	short, shortenError := app.Shortener.Shorten(url)
 	if shortenError != nil {
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return

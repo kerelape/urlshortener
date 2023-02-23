@@ -18,14 +18,14 @@ func NewWriterLog(info io.Writer, err io.Writer) *WriterLog {
 }
 
 func (log *WriterLog) WriteInfo(message string) {
-	var _, err = fmt.Fprint(log.Info, message)
+	_, err := fmt.Fprint(log.Info, message)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (log *WriterLog) WriteFailure(message string) {
-	var _, err = fmt.Fprint(log.Err, message)
+	_, err := fmt.Fprint(log.Err, message)
 	if err != nil {
 		panic(err)
 	}

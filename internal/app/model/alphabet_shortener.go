@@ -19,7 +19,7 @@ func NewAlphabetShortener(database storage.Database, alphabet Alphabet) *Alphabe
 }
 
 func (shortener *AlphabetShortener) Shorten(origin string) (string, error) {
-	var number, putError = shortener.Database.Put(origin)
+	number, putError := shortener.Database.Put(origin)
 	if putError != nil {
 		return "", putError
 	}
@@ -27,7 +27,7 @@ func (shortener *AlphabetShortener) Shorten(origin string) (string, error) {
 		return string(shortener.Alphabet.Rune(0)), nil
 	}
 	var cypher []rune
-	var base = shortener.Alphabet.Size()
+	base := shortener.Alphabet.Size()
 	for i := number; i > 0; i /= base {
 		cypher = append([]rune{shortener.Alphabet.Rune(i % base)}, cypher...)
 	}
@@ -36,9 +36,9 @@ func (shortener *AlphabetShortener) Shorten(origin string) (string, error) {
 
 func (shortener *AlphabetShortener) Reveal(shortened string) (string, error) {
 	var decoded uint
-	var encoded = []rune(shortened)
-	var lookup = shortener.Alphabet.String()
-	var base = shortener.Alphabet.Size()
+	encoded := []rune(shortened)
+	lookup := shortener.Alphabet.String()
+	base := shortener.Alphabet.Size()
 	for i := 0; i < len(encoded); i++ {
 		decoded = (decoded * base) + uint(strings.IndexRune(lookup, encoded[i]))
 	}

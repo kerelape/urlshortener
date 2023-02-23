@@ -16,11 +16,11 @@ type Config struct {
 
 func InitConfig() (Config, error) {
 	var environment Config
-	var parseError = env.Parse(&environment)
+	parseError := env.Parse(&environment)
 	if parseError != nil {
 		return environment, parseError
 	}
-	var flags = Config{}
+	flags := Config{}
 	flag.StringVar(&flags.ServerAddress, "a", "localhost:8080", "Server address")
 	flag.StringVar(&flags.BaseURL, "b", "http://localhost:8080", "Base URL")
 	flag.StringVar(&flags.FileStoragePath, "f", "/var/cache/urlshortener.db", "Path file DB")

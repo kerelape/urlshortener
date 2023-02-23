@@ -17,18 +17,18 @@ import (
 )
 
 func main() {
-	var config, configError = app.InitConfig()
+	config, configError := app.InitConfig()
 	if configError != nil {
 		panic(configError)
 	}
-	var database, databaseError = initDatabase(&config)
+	database, databaseError := initDatabase(&config)
 	if databaseError != nil {
 		panic(databaseError)
 	}
-	var log = initLog()
-	var address = config.ServerAddress
-	var shortener = initShortener(database, log, &config)
-	var service = initService(shortener, &config, log)
+	log := initLog()
+	address := config.ServerAddress
+	shortener := initShortener(database, log, &config)
+	service := initService(shortener, &config, log)
 	http.ListenAndServe(address, service)
 }
 
@@ -58,7 +58,7 @@ func initDatabase(config *app.Config) (storage.Database, error) {
 	if config.FileStoragePath == "" {
 		database = storage.NewFakeDatabase()
 	} else {
-		var fileDatabase, openFileDatabaseError = storage.OpenFileDatabase(config.FileStoragePath, true, 0644)
+		fileDatabase, openFileDatabaseError := storage.OpenFileDatabase(config.FileStoragePath, true, 0644)
 		if openFileDatabaseError != nil {
 			return nil, openFileDatabaseError
 		}
@@ -68,11 +68,11 @@ func initDatabase(config *app.Config) (storage.Database, error) {
 }
 
 func initService(model model.Shortener, config *app.Config, log logging.Log) http.Handler {
-	var router = chi.NewRouter()
+	router := chi.NewRouter()
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Use(ui.Decompress())
 	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
-	var api = api.NewAPI(
+	api := api.NewAPI(
 		api.NewShortenAPI(model),
 		api.NewUserAPI(
 			api.NewUserURLs(),

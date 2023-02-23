@@ -20,7 +20,7 @@ func NewAPI(shorten ui.Entry, user ui.Entry) *API {
 }
 
 func (api *API) Route() http.Handler {
-	var router = chi.NewRouter()
+	router := chi.NewRouter()
 	router.Mount("/shorten", api.shorten.Route())
 	router.Mount("/user", api.user.Route())
 	return router

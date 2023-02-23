@@ -18,7 +18,7 @@ func NewUserAPI(urls ui.Entry) *UserAPI {
 }
 
 func (api *UserAPI) Route() http.Handler {
-	var router = chi.NewRouter()
+	router := chi.NewRouter()
 	router.Mount("/urls", api.urls.Route())
 	return router
 }
