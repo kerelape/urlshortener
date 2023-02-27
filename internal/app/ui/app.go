@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
@@ -59,22 +60,22 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return
 	}
-	// user, getTokenError := app.GetToken(r)
-	// if getTokenError != nil {
-	// 	http.Error(w, "No token", http.StatusUnauthorized)
-	// 	return
-	// }
-	// recordError := application.history.Record(
-	// 	user,
-	// 	&storage.HistoryNode{
-	// 		OriginalURL: url,
-	// 		ShortURL:    short,
-	// 	},
-	// )
-	// if recordError != nil {
-	// 	http.Error(w, recordError.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	user, getTokenError := app.GetToken(r)
+	if getTokenError != nil {
+		http.Error(w, "No token", http.StatusUnauthorized)
+		return
+	}
+	recordError := application.history.Record(
+		user,
+		&storage.HistoryNode{
+			OriginalURL: url,
+			ShortURL:    short,
+		},
+	)
+	if recordError != nil {
+		http.Error(w, recordError.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(short)))
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)

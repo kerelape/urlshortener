@@ -17,10 +17,11 @@ func Tokenize() func(next http.Handler) http.Handler {
 				token := app.NewToken()
 				app.SetToken(w, token)
 				r.AddCookie(&http.Cookie{
-					Name:  "token",
+					Name:  tokenCookieName,
 					Value: hex.EncodeToString(token[:]),
 				})
 			}
+			next.ServeHTTP(w, r)
 		})
 	}
 }

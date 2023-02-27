@@ -9,7 +9,9 @@ type VirtualHistory struct {
 }
 
 func NewVirtualHistory() *VirtualHistory {
-	return &VirtualHistory{}
+	return &VirtualHistory{
+		history: map[app.Token]([]*HistoryNode){},
+	}
 }
 
 func (history *VirtualHistory) Record(user app.Token, node *HistoryNode) error {

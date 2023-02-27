@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"net/http"
+	"time"
 )
 
 type Token [8]byte
@@ -25,8 +26,10 @@ func SetToken(rw http.ResponseWriter, token Token) {
 	http.SetCookie(
 		rw,
 		&http.Cookie{
-			Name:  "token",
-			Value: string(hex.EncodeToString(token[:])),
+			Name:    "token",
+			Value:   string(hex.EncodeToString(token[:])),
+			Expires: time.Now().Add(time.Hour * 24 * 60),
+			Path:    "/",
 		},
 	)
 }

@@ -86,6 +86,7 @@ func initService(
 	router.Use(ui.Decompress())
 	router.Use(ui.Tokenize())
 	router.Mount(config.ShortenerPath, ui.NewApp(model, history).Route())
+	log.WriteInfo(config.ShortenerPath)
 	api := api.NewAPI(
 		api.NewShortenAPI(model, history),
 		api.NewUserAPI(
