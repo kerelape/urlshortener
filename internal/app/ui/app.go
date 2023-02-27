@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -80,4 +81,6 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	io.WriteString(w, short)
+	log.Default().Print("Written short url with 201 status")
+	log.Default().Print(short)
 }
