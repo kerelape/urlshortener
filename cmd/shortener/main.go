@@ -82,9 +82,9 @@ func initService(
 	history storage.History,
 ) http.Handler {
 	router := chi.NewRouter()
-	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Use(ui.Decompress())
 	router.Use(ui.Tokenize())
+	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Mount(config.ShortenerPath, ui.NewApp(model, history).Route())
 	log.WriteInfo(config.ShortenerPath)
 	api := api.NewAPI(

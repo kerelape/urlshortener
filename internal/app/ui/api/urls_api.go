@@ -55,6 +55,7 @@ func (api *UserURLs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, encodeError.Error(), http.StatusInternalServerError)
 		return
 	} else {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 	}
 }
