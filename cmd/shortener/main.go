@@ -84,6 +84,7 @@ func initService(
 	router := chi.NewRouter()
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Use(ui.Decompress())
+	router.Use(ui.Tokenize())
 	router.Mount(config.ShortenerPath, ui.NewApp(model, history).Route())
 	api := api.NewAPI(
 		api.NewShortenAPI(model, history),
