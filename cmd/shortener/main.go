@@ -25,10 +25,14 @@ func main() {
 	if databaseError != nil {
 		panic(databaseError)
 	}
+	history, historyError := initHistory()
+	if historyError != nil {
+		panic(historyError)
+	}
 	log := initLog()
 	address := config.ServerAddress
 	shortener := initShortener(database, log, &config)
-	service := initService(shortener, &config, log)
+	service := initService(shortener, &config, log, history)
 	http.ListenAndServe(address, service)
 }
 
@@ -58,7 +62,7 @@ func initDatabase(config *app.Config) (storage.Database, error) {
 	if config.FileStoragePath == "" {
 		database = storage.NewFakeDatabase()
 	} else {
-		fileDatabase, openFileDatabaseError := storage.OpenFileDatabase(config.FileStoragePath, true, 0644)
+		fileDatabase, openFileDatabaseError := storage.OpenFileDatabase(config.FileStoragePath, true, 0o644, 1024)
 		if openFileDatabaseError != nil {
 			return nil, openFileDatabaseError
 		}
@@ -67,15 +71,24 @@ func initDatabase(config *app.Config) (storage.Database, error) {
 	return database, nil
 }
 
-func initService(model model.Shortener, config *app.Config, log logging.Log) http.Handler {
+func initHistory() (storage.History, error) {
+	return storage.NewVirtualHistory(), nil
+}
+
+func initService(
+	model model.Shortener,
+	config *app.Config,
+	log logging.Log,
+	history storage.History,
+) http.Handler {
 	router := chi.NewRouter()
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Use(ui.Decompress())
-	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
+	router.Mount(config.ShortenerPath, ui.NewApp(model, history).Route())
 	api := api.NewAPI(
-		api.NewShortenAPI(model),
+		api.NewShortenAPI(model, history),
 		api.NewUserAPI(
-			api.NewUserURLs(),
+			api.NewUserURLs(history),
 		),
 	)
 	router.Mount(config.APIPath, api.Route())

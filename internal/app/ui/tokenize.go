@@ -15,8 +15,9 @@ func Tokenize() func(next http.Handler) http.Handler {
 			_, cookieError := r.Cookie(tokenCookieName)
 			if cookieError != nil {
 				token := app.NewToken()
+				app.SetToken(w, token)
 				r.AddCookie(&http.Cookie{
-					Name:  tokenCookieName,
+					Name:  "token",
 					Value: hex.EncodeToString(token[:]),
 				})
 			}
