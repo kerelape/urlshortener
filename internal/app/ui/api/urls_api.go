@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/kerelape/urlshortener/internal/app"
@@ -49,14 +50,15 @@ func (api *UserURLs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Original: records[i].OriginalURL,
 		}
 	}
-	writer := json.NewEncoder(w)
-	encodeError := writer.Encode(response)
-	if encodeError != nil {
-		http.Error(w, encodeError.Error(), http.StatusInternalServerError)
+	body, marshalError := json.Marshal(response)
+	if marshalError != nil {
+		http.Error(w, marshalError.Error(), http.StatusInternalServerError)
 		return
 	} else {
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 		w.WriteHeader(http.StatusOK)
+		w.Write(body)
 	}
 }
 
