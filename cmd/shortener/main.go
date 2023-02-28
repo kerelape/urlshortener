@@ -81,18 +81,21 @@ func initService(
 	log logging.Log,
 	history storage.History,
 ) http.Handler {
+	webUI := ui.NewWebUI(
+		map[string]ui.Entry{
+			config.ShortenerPath: ui.NewApp(model, history),
+			config.APIPath: api.NewAPI(
+				api.NewShortenAPI(model, history),
+				api.NewUserAPI(
+					api.NewUserURLs(history),
+				),
+			),
+		},
+	)
 	router := chi.NewRouter()
 	router.Use(ui.Decompress())
 	router.Use(ui.Tokenize())
 	router.Use(middleware.Compress(gzip.BestCompression))
-	router.Mount(config.ShortenerPath, ui.NewApp(model, history).Route())
-	log.WriteInfo(config.ShortenerPath)
-	api := api.NewAPI(
-		api.NewShortenAPI(model, history),
-		api.NewUserAPI(
-			api.NewUserURLs(history),
-		),
-	)
-	router.Mount(config.APIPath, api.Route())
+	router.Mount("/", webUI.Route())
 	return router
 }
