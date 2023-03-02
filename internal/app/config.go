@@ -27,7 +27,7 @@ func InitConfig() (Config, error) {
 	flag.StringVar(&flags.FileStoragePath, "f", "/var/cache/urlshortener.db", "Path file DB")
 	flag.StringVar(&flags.APIPath, "api-path", "/api", "API root")
 	flag.StringVar(&flags.ShortenerPath, "app-path", "/", "Shortener root")
-	flag.StringVar(&flags.DatabaseDSN, "database-dsn", "", "")
+	flag.StringVar(&flags.DatabaseDSN, "d", "", "")
 	flag.Parse()
 	if environment.ServerAddress == "" {
 		environment.ServerAddress = flags.ServerAddress
