@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/kerelape/urlshortener/internal/app"
 	logging "github.com/kerelape/urlshortener/internal/app/log"
 	"github.com/kerelape/urlshortener/internal/app/model"
@@ -102,7 +102,7 @@ func initService(
 					api.NewUserURLs(history),
 				),
 			),
-			"ping": ui.NewSQLPing(database),
+			"/ping": ui.NewSQLPing(database),
 		},
 	)
 	router := chi.NewRouter()
