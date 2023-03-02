@@ -16,9 +16,9 @@ type (
 func Decompress() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var request = *r
+			request := *r
 			if r.Header.Get("Content-Encoding") == "gzip" {
-				var decompressedBody, decompressedBodyError = gzip.NewReader(r.Body)
+				decompressedBody, decompressedBodyError := gzip.NewReader(r.Body)
 				if decompressedBodyError != nil {
 					http.Error(w, decompressedBodyError.Error(), http.StatusInternalServerError)
 					return

@@ -19,7 +19,7 @@ func NewVerboseShortener(origin model.Shortener, log Log) *VerboseShortener {
 }
 
 func (shortener *VerboseShortener) Shorten(origin string) (string, error) {
-	var shortened, shortenError = shortener.Origin.Shorten(origin)
+	shortened, shortenError := shortener.Origin.Shorten(origin)
 	if shortenError != nil {
 		shortener.Log.WriteFailure("Failed to shorten: " + shortenError.Error())
 	} else {
@@ -31,7 +31,7 @@ func (shortener *VerboseShortener) Shorten(origin string) (string, error) {
 }
 
 func (shortener *VerboseShortener) Reveal(short string) (string, error) {
-	var origin, err = shortener.Origin.Reveal(short)
+	origin, err := shortener.Origin.Reveal(short)
 	if err != nil {
 		shortener.Log.WriteFailure(
 			fmt.Sprintf("Failed to reveal \"%s\"", short),
