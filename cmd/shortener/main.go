@@ -2,12 +2,14 @@ package main
 
 import (
 	"compress/gzip"
+	"database/sql"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/jackc/pgx/v5"
 	"github.com/kerelape/urlshortener/internal/app"
 	logging "github.com/kerelape/urlshortener/internal/app/log"
 	"github.com/kerelape/urlshortener/internal/app/model"
@@ -29,10 +31,14 @@ func main() {
 	if historyError != nil {
 		panic(historyError)
 	}
+	sqlDB, sqlDBError := initSQLDatabase(config.DatabaseDSN)
+	if sqlDBError != nil {
+		panic(sqlDBError)
+	}
 	log := initLog()
 	address := config.ServerAddress
 	shortener := initShortener(database, log, &config)
-	service := initService(shortener, &config, log, history)
+	service := initService(shortener, &config, log, history, sqlDB)
 	http.ListenAndServe(address, service)
 }
 
@@ -75,11 +81,17 @@ func initHistory() (storage.History, error) {
 	return storage.NewVirtualHistory(), nil
 }
 
+func initSQLDatabase(url string) (*sql.DB, error) {
+	db, dbError := sql.Open("pgx", url)
+	return db, dbError
+}
+
 func initService(
 	model model.Shortener,
 	config *app.Config,
 	log logging.Log,
 	history storage.History,
+	database *sql.DB,
 ) http.Handler {
 	webUI := ui.NewWebUI(
 		map[string]ui.Entry{
@@ -90,6 +102,7 @@ func initService(
 					api.NewUserURLs(history),
 				),
 			),
+			"ping": ui.NewSQLPing(database),
 		},
 	)
 	router := chi.NewRouter()
