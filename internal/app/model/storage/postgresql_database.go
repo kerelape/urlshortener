@@ -42,5 +42,5 @@ func (database *PostgreSQLDatabase) Get(id uint) (string, error) {
 }
 
 func (database *PostgreSQLDatabase) Ping() error {
-	return database.Ping()
+	return database.db.Ping()
 }
