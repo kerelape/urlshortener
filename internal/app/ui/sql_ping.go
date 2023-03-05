@@ -1,17 +1,17 @@
 package ui
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
 type SQLPing struct {
-	database *sql.DB
+	database storage.Database
 }
 
-func NewSQLPing(database *sql.DB) *SQLPing {
+func NewSQLPing(database storage.Database) *SQLPing {
 	return &SQLPing{
 		database: database,
 	}

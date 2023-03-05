@@ -22,3 +22,7 @@ func (database *FakeDatabase) Get(id uint) (string, error) {
 	}
 	return database.Values[id], nil
 }
+
+func (database *FakeDatabase) Ping() error {
+	return errors.New("FakeDatabase")
+}

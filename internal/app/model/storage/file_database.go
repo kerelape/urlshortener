@@ -64,3 +64,7 @@ func (database *FileDatabase) Get(id uint) (string, error) {
 	value, readStringError := bytes.NewBuffer(buffer).ReadString(0x00)
 	return value[:len(value)-1], readStringError
 }
+
+func (database *FileDatabase) Ping() error {
+	return errors.New("FileDatabase")
+}
