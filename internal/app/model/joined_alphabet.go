@@ -17,7 +17,7 @@ func (alphabet *JoinedAlphabet) Size() uint {
 }
 
 func (alphabet *JoinedAlphabet) Rune(id uint) rune {
-	var startSize = alphabet.Base.Size()
+	startSize := alphabet.Base.Size()
 	if id >= startSize {
 		return alphabet.Tail.Rune(id - startSize)
 	}

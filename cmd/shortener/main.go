@@ -13,21 +13,26 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
+	"github.com/kerelape/urlshortener/internal/app/ui/api"
 )
 
 func main() {
-	var config, configError = app.InitConfig()
+	config, configError := app.InitConfig()
 	if configError != nil {
 		panic(configError)
 	}
-	var database, databaseError = initDatabase(&config)
+	database, databaseError := initDatabase(&config)
 	if databaseError != nil {
 		panic(databaseError)
 	}
-	var log = initLog()
-	var address = config.ServerAddress
-	var shortener = initShortener(database, log, &config)
-	var service = initService(shortener, &config, log)
+	history, historyError := initHistory()
+	if historyError != nil {
+		panic(historyError)
+	}
+	log := initLog()
+	address := config.ServerAddress
+	shortener := initShortener(database, log, &config)
+	service := initService(shortener, &config, log, history, database)
 	http.ListenAndServe(address, service)
 }
 
@@ -53,11 +58,14 @@ func initLog() logging.Log {
 }
 
 func initDatabase(config *app.Config) (storage.Database, error) {
+	if config.DatabaseDSN != "" {
+		return storage.DialPostgreSQLDatabase(config.DatabaseDSN)
+	}
 	var database storage.Database
 	if config.FileStoragePath == "" {
 		database = storage.NewFakeDatabase()
 	} else {
-		var fileDatabase, openFileDatabaseError = storage.OpenFileDatabase(config.FileStoragePath, true, 0644)
+		fileDatabase, openFileDatabaseError := storage.OpenFileDatabase(config.FileStoragePath, true, 0o644, 1024)
 		if openFileDatabaseError != nil {
 			return nil, openFileDatabaseError
 		}
@@ -66,18 +74,33 @@ func initDatabase(config *app.Config) (storage.Database, error) {
 	return database, nil
 }
 
-func initService(model model.Shortener, config *app.Config, log logging.Log) http.Handler {
-	var router = chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Use(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log.WriteInfo("content encoding: " + r.Header.Get("Content-Encoding"))
-			h.ServeHTTP(w, r)
-		})
-	})
-	router.Use(middleware.Compress(gzip.BestCompression))
+func initHistory() (storage.History, error) {
+	return storage.NewVirtualHistory(), nil
+}
+
+func initService(
+	model model.Shortener,
+	config *app.Config,
+	log logging.Log,
+	history storage.History,
+	database storage.Database,
+) http.Handler {
+	webUI := ui.NewWebUI(
+		map[string]ui.Entry{
+			config.ShortenerPath: ui.NewApp(model, history),
+			config.APIPath: api.NewAPI(
+				api.NewShortenAPI(model, history),
+				api.NewUserAPI(
+					api.NewUserURLs(history),
+				),
+			),
+			"/ping": ui.NewSQLPing(database),
+		},
+	)
+	router := chi.NewRouter()
 	router.Use(ui.Decompress())
-	router.Mount(config.ShortenerPath, ui.NewApp(model).Route())
-	router.Mount(config.APIPath, ui.NewAPI(model).Route())
+	router.Use(ui.Tokenize())
+	router.Use(middleware.Compress(gzip.BestCompression))
+	router.Mount("/", webUI.Route())
 	return router
 }
