@@ -8,56 +8,63 @@ import (
 	"sync"
 )
 
-const fileDatabaseChunkSize = 2048
-
 var ErrTooLargeValue = errors.New("too large value")
 
 type FileDatabase struct {
-	file   *os.File
-	rw     sync.Mutex
-	buffer []byte
+	file      *os.File
+	rw        sync.Mutex
+	buffer    []byte
+	chunkSize int
 }
 
-func NewFileDatabase(file *os.File) *FileDatabase {
-	return &FileDatabase{file: file, buffer: make([]byte, fileDatabaseChunkSize)}
+func NewFileDatabase(file *os.File, chunkSize int) *FileDatabase {
+	return &FileDatabase{
+		file:      file,
+		buffer:    make([]byte, chunkSize),
+		chunkSize: chunkSize,
+	}
 }
 
-func OpenFileDatabase(name string, create bool, permission fs.FileMode) (*FileDatabase, error) {
-	var flag = os.O_RDWR
+func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSize int) (*FileDatabase, error) {
+	flag := os.O_RDWR
 	if create {
 		flag |= os.O_CREATE
 	}
-	var file, openError = os.OpenFile(name, flag, permission)
+	file, openError := os.OpenFile(name, flag, permission)
 	if openError != nil {
 		return nil, openError
 	}
-	return NewFileDatabase(file), nil
+	return NewFileDatabase(file, chunkSize), nil
 }
 
 func (database *FileDatabase) Put(value string) (uint, error) {
 	database.rw.Lock()
 	defer database.rw.Unlock()
-	var stat, statError = database.file.Stat()
+	stat, statError := database.file.Stat()
 	if statError != nil {
 		return 0, statError
 	}
-	if len(value) > fileDatabaseChunkSize {
+	if len(value) > database.chunkSize {
 		return 0, ErrTooLargeValue
 	}
-	var id = stat.Size() / fileDatabaseChunkSize
-	var buffer = append([]byte(value), make([]byte, fileDatabaseChunkSize-len(value))...)
-	var _, writeError = database.file.WriteAt(buffer, int64(id*fileDatabaseChunkSize))
+	id := stat.Size() / int64(database.chunkSize)
+	buffer := append([]byte(value), make([]byte, database.chunkSize-len(value))...)
+	_, writeError := database.file.WriteAt(buffer, id*int64(database.chunkSize))
 	return uint(id), writeError
 }
 
 func (database *FileDatabase) Get(id uint) (string, error) {
 	database.rw.Lock()
 	defer database.rw.Unlock()
-	var buffer = make([]byte, fileDatabaseChunkSize)
-	var _, readError = database.file.ReadAt(buffer, int64(id)*fileDatabaseChunkSize)
+	buffer := make([]byte, database.chunkSize)
+	_, readError := database.file.ReadAt(buffer, int64(int(id)*database.chunkSize))
 	if readError != nil {
 		return "", readError
 	}
-	var value, readStringError = bytes.NewBuffer(buffer).ReadString(0x00)
+	value, readStringError := bytes.NewBuffer(buffer).ReadString(0x00)
 	return value[:len(value)-1], readStringError
+}
+
+func (database *FileDatabase) Ping() error {
+	return errors.New("FileDatabase")
 }
