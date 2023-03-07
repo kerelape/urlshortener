@@ -88,13 +88,8 @@ func initService(
 	webUI := ui.NewWebUI(
 		map[string]ui.Entry{
 			config.ShortenerPath: ui.NewApp(model, history),
-			config.APIPath: api.NewAPI(
-				api.NewShortenAPI(model, history),
-				api.NewUserAPI(
-					api.NewUserURLs(history),
-				),
-			),
-			"/ping": ui.NewSQLPing(database),
+			config.APIPath:       api.NewAPI(model, history),
+			"/ping":              ui.NewSQLPing(database),
 		},
 	)
 	router := chi.NewRouter()

@@ -10,11 +10,13 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
+	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
 type ShortenAPI struct {
 	shortener model.Shortener
 	history   storage.History
+	batch     ui.Entry
 }
 
 type (
@@ -31,12 +33,14 @@ func NewShortenAPI(shortener model.Shortener, history storage.History) *ShortenA
 	return &ShortenAPI{
 		shortener: shortener,
 		history:   history,
+		batch:     NewBatchAPI(shortener, history),
 	}
 }
 
 func (shorten *ShortenAPI) Route() http.Handler {
 	router := chi.NewRouter()
 	router.Post("/", shorten.ServeHTTP)
+	router.Mount("/batch", shorten.batch.Route())
 	return router
 }
 

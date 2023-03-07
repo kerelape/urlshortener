@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"encoding/json"
@@ -10,23 +10,23 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
-type UserURLs struct {
+type URLsAPI struct {
 	history storage.History
 }
 
-func NewUserURLs(history storage.History) *UserURLs {
-	return &UserURLs{
+func NewURLsAPI(history storage.History) *URLsAPI {
+	return &URLsAPI{
 		history: history,
 	}
 }
 
-func (api *UserURLs) Route() http.Handler {
+func (api *URLsAPI) Route() http.Handler {
 	router := chi.NewRouter()
 	router.Get("/", api.ServeHTTP)
 	return router
 }
 
-func (api *UserURLs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (api *URLsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tokenCookie, tokenCookieError := r.Cookie("token")
 	if tokenCookieError != nil {
 		panic(tokenCookieError)
