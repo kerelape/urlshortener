@@ -1,4 +1,4 @@
-package api
+package shorten
 
 import (
 	"encoding/json"
