@@ -41,6 +41,65 @@ func (database *PostgreSQLDatabase) Get(id uint) (string, error) {
 	return origin, scanError
 }
 
+func (database *PostgreSQLDatabase) PutAll(values []string) ([]uint, error) {
+	transaction, beginError := database.db.Begin()
+	if beginError != nil {
+		return nil, beginError
+	}
+	defer transaction.Rollback()
+	statement, prepareError := transaction.Prepare("INSERT INTO urls(origin) VALUES($1) RETURNING id")
+	if prepareError != nil {
+		return nil, prepareError
+	}
+	defer statement.Close()
+	ids := make([]uint, len(values))
+	for i, value := range values {
+		result, execError := statement.Exec(value)
+		if execError != nil {
+			return nil, execError
+		}
+		id, idError := result.LastInsertId()
+		if idError != nil {
+			return nil, idError
+		}
+		ids[i] = uint(id)
+	}
+	commitError := transaction.Commit()
+	if commitError != nil {
+		return nil, commitError
+	}
+	return ids, nil
+}
+
+func (database *PostgreSQLDatabase) GetAll(ids []uint) ([]string, error) {
+	transaction, beginError := database.db.Begin()
+	if beginError != nil {
+		return nil, beginError
+	}
+	defer transaction.Rollback()
+	statement, prepareError := transaction.Prepare("SELECT origin FROM urls WHERE id = $1")
+	if prepareError != nil {
+		return nil, prepareError
+	}
+	defer statement.Close()
+	values := make([]string, len(ids))
+	for i, id := range ids {
+		row := statement.QueryRow(int64(id))
+		if row.Err() != nil {
+			return nil, row.Err()
+		}
+		scanError := row.Scan(&values[i])
+		if scanError != nil {
+			return nil, scanError
+		}
+	}
+	commitError := transaction.Commit()
+	if commitError != nil {
+		return nil, commitError
+	}
+	return values, nil
+}
+
 func (database *PostgreSQLDatabase) Ping() error {
 	return database.db.Ping()
 }

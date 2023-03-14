@@ -23,6 +23,30 @@ func (database *FakeDatabase) Get(id uint) (string, error) {
 	return database.Values[id], nil
 }
 
+func (database *FakeDatabase) PutAll(values []string) ([]uint, error) {
+	result := make([]uint, len(values))
+	for i := 0; i < len(values); i++ {
+		id, putError := database.Put(values[i])
+		if putError != nil {
+			return nil, putError
+		}
+		result[i] = id
+	}
+	return result, nil
+}
+
+func (database *FakeDatabase) GetAll(ids []uint) ([]string, error) {
+	result := make([]string, len(ids))
+	for i := 0; i < len(ids); i++ {
+		value, getError := database.Get(ids[i])
+		if getError != nil {
+			return nil, getError
+		}
+		result[i] = value
+	}
+	return result, nil
+}
+
 func (database *FakeDatabase) Ping() error {
 	return errors.New("FakeDatabase")
 }
