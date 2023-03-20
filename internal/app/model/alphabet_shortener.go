@@ -44,3 +44,27 @@ func (shortener *AlphabetShortener) Reveal(shortened string) (string, error) {
 	}
 	return shortener.Database.Get(decoded)
 }
+
+func (shortener *AlphabetShortener) ShortenAll(origins []string) ([]string, error) {
+	result := make([]string, len(origins))
+	for i, origin := range origins {
+		short, shortenError := shortener.Shorten(origin)
+		if shortenError != nil {
+			return nil, shortenError
+		}
+		result[i] = short
+	}
+	return result, nil
+}
+
+func (shortener *AlphabetShortener) RevealAll(shortened []string) ([]string, error) {
+	result := make([]string, len(shortened))
+	for i, shortened := range shortened {
+		reveal, revealError := shortener.Reveal(shortened)
+		if revealError != nil {
+			return nil, revealError
+		}
+		result[i] = reveal
+	}
+	return result, nil
+}

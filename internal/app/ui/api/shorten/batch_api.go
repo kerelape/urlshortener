@@ -43,17 +43,20 @@ func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response := make([]*batchAPIResponseNode, len(request))
-	for i := 0; i < len(response); i++ {
-		requestNode := request[i]
-		shortURL, shortenError := api.shortener.Shorten(requestNode.OriginalURL)
-		if shortenError != nil {
-			status := http.StatusInternalServerError
-			http.Error(rw, http.StatusText(status), status)
-			return
-		}
+	origins := make([]string, len(request))
+	for i, requestNode := range request {
+		origins[i] = requestNode.OriginalURL
+	}
+	shorts, shortenError := api.shortener.ShortenAll(origins)
+	if shortenError != nil {
+		status := http.StatusInternalServerError
+		http.Error(rw, http.StatusText(status), status)
+		return
+	}
+	for i := range response {
 		response[i] = &batchAPIResponseNode{
-			CorrelationID: requestNode.CorrelationID,
-			ShortURL:      shortURL,
+			CorrelationID: request[i].CorrelationID,
+			ShortURL:      shorts[i],
 		}
 	}
 	for i := 0; i < len(response); i++ {
