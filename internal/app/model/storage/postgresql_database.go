@@ -26,11 +26,12 @@ func DialPostgreSQLDatabase(dsn string) (*PostgreSQLDatabase, error) {
 }
 
 func (database *PostgreSQLDatabase) Put(value string) (uint, error) {
-	result, execError := database.db.Exec("INSERT INTO urls(origin) VALUES($1) RETURNING id", value)
-	if execError != nil {
-		return 0, execError
+	row := database.db.QueryRow("INSERT INTO urls(origin) VALUES($1) RETURNING id", value)
+	if row.Err() != nil {
+		return 0, row.Err()
 	}
-	id, idError := result.LastInsertId()
+	var id int64
+	idError := row.Scan(&id)
 	return uint(id), idError
 }
 
@@ -54,15 +55,11 @@ func (database *PostgreSQLDatabase) PutAll(values []string) ([]uint, error) {
 	defer statement.Close()
 	ids := make([]uint, len(values))
 	for i, value := range values {
-		result, execError := statement.Exec(value)
-		if execError != nil {
-			return nil, execError
+		row := statement.QueryRow(value)
+		if row.Err() != nil {
+			return nil, row.Err()
 		}
-		id, idError := result.LastInsertId()
-		if idError != nil {
-			return nil, idError
-		}
-		ids[i] = uint(id)
+		row.Scan(&ids[i])
 	}
 	commitError := transaction.Commit()
 	if commitError != nil {
