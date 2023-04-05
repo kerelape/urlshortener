@@ -12,6 +12,11 @@ func NewFakeDatabase() *FakeDatabase {
 }
 
 func (database *FakeDatabase) Put(value string) (uint, error) {
+	for i, u := range database.Values {
+		if u == value {
+			return 0, NewDuplicateValueError(uint(i))
+		}
+	}
 	database.Values = append(database.Values, value)
 	return uint(len(database.Values) - 1), nil
 }

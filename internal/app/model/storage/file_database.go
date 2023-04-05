@@ -39,8 +39,8 @@ func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSiz
 
 func (database *FileDatabase) Put(value string) (uint, error) {
 	database.rw.Lock()
-	defer database.rw.Unlock()
 	stat, statError := database.file.Stat()
+	database.rw.Unlock()
 	if statError != nil {
 		return 0, statError
 	}
@@ -48,8 +48,19 @@ func (database *FileDatabase) Put(value string) (uint, error) {
 		return 0, ErrTooLargeValue
 	}
 	id := stat.Size() / int64(database.chunkSize)
+	for i := uint(0); i < (uint(id) - 1); i++ {
+		sameURL, err := database.Get(i)
+		if err != nil {
+			return 0, err
+		}
+		if sameURL == value {
+			return 0, NewDuplicateValueError(i)
+		}
+	}
 	buffer := append([]byte(value), make([]byte, database.chunkSize-len(value))...)
+	database.rw.Lock()
 	_, writeError := database.file.WriteAt(buffer, id*int64(database.chunkSize))
+	database.rw.Unlock()
 	return uint(id), writeError
 }
 

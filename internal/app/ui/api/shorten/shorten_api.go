@@ -2,6 +2,7 @@ package shorten
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -62,6 +63,19 @@ func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	shortURL, shortenError := shorten.shortener.Shorten(req.URL)
 	if shortenError != nil {
+		var duplicateError model.DuplicateURLError
+		if errors.As(shortenError, &duplicateError) {
+			resp, marhsalRespError := json.Marshal(shortenResponse{Result: duplicateError.Origin})
+			if marhsalRespError != nil {
+				http.Error(w, marhsalRespError.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Content-Length", strconv.Itoa(len(resp)))
+			w.WriteHeader(http.StatusConflict)
+			w.Write(resp)
+			return
+		}
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return
 	}

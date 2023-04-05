@@ -26,6 +26,17 @@ func DialPostgreSQLDatabase(dsn string) (*PostgreSQLDatabase, error) {
 }
 
 func (database *PostgreSQLDatabase) Put(value string) (uint, error) {
+	same := database.db.QueryRow("SELECT id FROM urls WHERE origin = $1", value)
+	if same.Err() != nil {
+		return 0, same.Err()
+	}
+	var sameID int64
+	if err := same.Scan(&sameID); err == nil {
+		if err != nil {
+			return 0, err
+		}
+		return 0, NewDuplicateValueError(uint(sameID))
+	}
 	row := database.db.QueryRow("INSERT INTO urls(origin) VALUES($1) RETURNING id", value)
 	if row.Err() != nil {
 		return 0, row.Err()

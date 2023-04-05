@@ -1,6 +1,9 @@
 package model
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 type URLShortener struct {
 	Shortener Shortener
@@ -18,6 +21,11 @@ func NewURLShortener(origin Shortener, baseURL string, path string) *URLShortene
 
 func (shortener *URLShortener) Shorten(origin string) (string, error) {
 	short, shortenError := shortener.Shortener.Shorten(origin)
+	var duplicate DuplicateURLError
+	if errors.As(shortenError, &duplicate) {
+		duplicate.Origin = shortener.BaseURL + shortener.Path + duplicate.Origin
+		return "", duplicate
+	}
 	return shortener.BaseURL + shortener.Path + short, shortenError
 }
 

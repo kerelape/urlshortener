@@ -1,5 +1,7 @@
 package storage
 
+import "fmt"
+
 type Database interface {
 	Put(value string) (uint, error)
 	Get(id uint) (string, error)
@@ -8,10 +10,16 @@ type Database interface {
 	Ping() error
 }
 
-type ErrDuplicate struct {
+type DuplicateValueError struct {
 	Origin uint
 }
 
-func (err *ErrDuplicate) Error() string {
-	return "Duplicate"
+func NewDuplicateValueError(origin uint) DuplicateValueError {
+	return DuplicateValueError{
+		Origin: origin,
+	}
+}
+
+func (e DuplicateValueError) Error() string {
+	return fmt.Sprintf("duplicate value of ID: %d", e.Origin)
 }

@@ -1,11 +1,13 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
@@ -27,6 +29,7 @@ func NewApp(shortener model.Shortener, history storage.History) *App {
 
 func (application *App) Route() http.Handler {
 	router := chi.NewRouter()
+	router.Use(middleware.Logger)
 	router.Get(fmt.Sprintf("/{%s}", ShortURLParam), application.handleReveal)
 	router.Post("/", application.handleShorten)
 	return router
@@ -57,6 +60,14 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 	}
 	short, shortenError := application.shortener.Shorten(url)
 	if shortenError != nil {
+		var duplicate model.DuplicateURLError
+		if errors.As(shortenError, &duplicate) {
+			w.Header().Add("Content-Length", fmt.Sprintf("%d", len(short)))
+			w.Header().Add("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusConflict)
+			io.WriteString(w, duplicate.Origin)
+			return
+		}
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return
 	}
