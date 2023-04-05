@@ -37,16 +37,16 @@ func main() {
 }
 
 func initShortener(database storage.Database, log logging.Log, config *app.Config) model.Shortener {
-	return model.NewURLShortener(
-		logging.NewVerboseShortener(
+	return logging.NewVerboseShortener(
+		model.NewURLShortener(
 			model.NewAlphabetShortener(
 				database,
 				model.NewBase62Alphabet(),
 			),
-			log,
+			config.BaseURL,
+			config.ShortenerPath,
 		),
-		config.BaseURL,
-		config.ShortenerPath,
+		log,
 	)
 }
 
