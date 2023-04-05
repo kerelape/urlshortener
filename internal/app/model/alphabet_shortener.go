@@ -78,9 +78,5 @@ func (shortener *AlphabetShortener) RevealAll(shortened []string) ([]string, err
 	if getError != nil {
 		return nil, getError
 	}
-	result := make([]string, len(shortened))
-	for _, value := range values {
-		result = append(result, value)
-	}
-	return result, nil
+	return values, nil
 }

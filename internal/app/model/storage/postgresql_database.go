@@ -32,9 +32,6 @@ func (database *PostgreSQLDatabase) Put(value string) (uint, error) {
 	}
 	var sameID int64
 	if err := same.Scan(&sameID); err == nil {
-		if err != nil {
-			return 0, err
-		}
 		return 0, NewDuplicateValueError(uint(sameID))
 	}
 	row := database.db.QueryRow("INSERT INTO urls(origin) VALUES($1) RETURNING id", value)

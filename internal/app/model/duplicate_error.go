@@ -2,4 +2,4 @@ package model
 
 import "errors"
 
-var DuplicateError = errors.New("duplicate")
+var ErrDuplicate = errors.New("duplicate")
