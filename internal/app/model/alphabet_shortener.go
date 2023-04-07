@@ -31,7 +31,8 @@ func (shortener *AlphabetShortener) encode(number uint) string {
 	return string(cypher)
 }
 
-func (shortener *AlphabetShortener) decode(encoded string) (result uint) {
+func (shortener *AlphabetShortener) decode(encoded string) uint {
+	result := uint(0)
 	cypher := []rune(encoded)
 	lookup := shortener.Alphabet.String()
 	base := shortener.Alphabet.Size()

@@ -1,10 +1,8 @@
 package ui
 
 import (
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -59,15 +57,12 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 	}
 	short, shortenError := application.shortener.Shorten(url)
 	if shortenError != nil {
-		var duplicate model.DuplicateURLError
-		if errors.As(shortenError, &duplicate) {
-			w.Header().Add("Content-Length", fmt.Sprintf("%d", len(duplicate.Origin)))
-			w.Header().Add("Content-Type", "text/plain")
-			w.WriteHeader(http.StatusConflict)
-			io.WriteString(w, duplicate.Origin)
-			return
-		}
-		log.Default().Println("Failed to shorten: " + shortenError.Error())
+		// duplicate := &model.DuplicateURLError{}
+		// if errors.As(shortenError, duplicate) {
+		// 	w.WriteHeader(http.StatusConflict)
+		// 	io.WriteString(w, duplicate.Origin)
+		// 	return
+		// }
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return
 	}
