@@ -63,7 +63,7 @@ func (shortener *AlphabetShortener) ShortenAll(origins []string) ([]string, erro
 	if putError != nil {
 		return nil, putError
 	}
-	result := make([]string, len(origins))
+	result := make([]string, 0, len(origins))
 	for _, id := range ids {
 		result = append(result, shortener.encode(id))
 	}

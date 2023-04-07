@@ -83,7 +83,12 @@ func (database *FileDatabase) PutAll(values []string) ([]uint, error) {
 	for i := 0; i < len(values); i++ {
 		id, putError := database.Put(values[i])
 		if putError != nil {
-			return nil, putError
+			var duplicate DuplicateValueError
+			if errors.As(putError, &duplicate) {
+				id = duplicate.Origin
+			} else {
+				return nil, putError
+			}
 		}
 		result[i] = id
 	}
