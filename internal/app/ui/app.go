@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
@@ -29,7 +29,6 @@ func NewApp(shortener model.Shortener, history storage.History) *App {
 
 func (application *App) Route() http.Handler {
 	router := chi.NewRouter()
-	router.Use(middleware.Logger)
 	router.Get(fmt.Sprintf("/{%s}", ShortURLParam), application.handleReveal)
 	router.Post("/", application.handleShorten)
 	return router
@@ -48,6 +47,7 @@ func (application *App) handleReveal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
+	log.Default().Println("Read request body")
 	origin, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -58,24 +58,29 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	log.Default().Println("Shorten URL")
 	short, shortenError := application.shortener.Shorten(url)
 	if shortenError != nil {
 		var duplicate model.DuplicateURLError
 		if errors.As(shortenError, &duplicate) {
+			log.Default().Println("Duplicate")
 			w.Header().Add("Content-Length", fmt.Sprintf("%d", len(short)))
 			w.Header().Add("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusConflict)
 			io.WriteString(w, duplicate.Origin)
 			return
 		}
+		log.Default().Println("Failed to shorten: " + shortenError.Error())
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return
 	}
+	log.Default().Println("Get token")
 	user, getTokenError := app.GetToken(r)
 	if getTokenError != nil {
 		http.Error(w, "No token", http.StatusUnauthorized)
 		return
 	}
+	log.Default().Println("Record")
 	recordError := application.history.Record(
 		user,
 		&storage.HistoryNode{
@@ -84,6 +89,7 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if recordError != nil {
+		log.Default().Println("Failed to record: " + recordError.Error())
 		http.Error(w, recordError.Error(), http.StatusInternalServerError)
 		return
 	}
