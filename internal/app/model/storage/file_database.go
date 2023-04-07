@@ -48,13 +48,15 @@ func (database *FileDatabase) Put(value string) (uint, error) {
 		return 0, ErrTooLargeValue
 	}
 	id := stat.Size() / int64(database.chunkSize)
-	for i := uint(0); i < (uint(id) - 1); i++ {
-		sameURL, err := database.Get(i)
-		if err != nil {
-			return 0, err
-		}
-		if sameURL == value {
-			return 0, NewDuplicateValueError(i)
+	if id != 0 {
+		for i := uint(0); i < uint(id); i++ {
+			sameURL, err := database.Get(i)
+			if err != nil {
+				return 0, err
+			}
+			if sameURL == value {
+				return 0, NewDuplicateValueError(i)
+			}
 		}
 	}
 	buffer := append([]byte(value), make([]byte, database.chunkSize-len(value))...)

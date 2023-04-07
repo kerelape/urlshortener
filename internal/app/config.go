@@ -24,7 +24,7 @@ func InitConfig() (Config, error) {
 	flags := Config{}
 	flag.StringVar(&flags.ServerAddress, "a", "localhost:8080", "Server address")
 	flag.StringVar(&flags.BaseURL, "b", "http://localhost:8080", "Base URL")
-	flag.StringVar(&flags.FileStoragePath, "f", "/var/cache/urlshortener.db", "Path file DB")
+	flag.StringVar(&flags.FileStoragePath, "f", "urlshortener.db", "Path file DB")
 	flag.StringVar(&flags.APIPath, "api-path", "/api", "API root")
 	flag.StringVar(&flags.ShortenerPath, "app-path", "/", "Shortener root")
 	flag.StringVar(&flags.DatabaseDSN, "d", "", "")

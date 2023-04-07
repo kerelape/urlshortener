@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -57,12 +58,12 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 	}
 	short, shortenError := application.shortener.Shorten(url)
 	if shortenError != nil {
-		// duplicate := &model.DuplicateURLError{}
-		// if errors.As(shortenError, duplicate) {
-		// 	w.WriteHeader(http.StatusConflict)
-		// 	io.WriteString(w, duplicate.Origin)
-		// 	return
-		// }
+		duplicate := &model.DuplicateURLError{}
+		if errors.As(shortenError, duplicate) {
+			w.WriteHeader(http.StatusConflict)
+			io.WriteString(w, duplicate.Origin)
+			return
+		}
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
 		return
 	}
