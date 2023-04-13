@@ -2,6 +2,9 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
+	"strconv"
+	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -77,32 +80,24 @@ func (database *PostgreSQLDatabase) PutAll(values []string) ([]uint, error) {
 }
 
 func (database *PostgreSQLDatabase) GetAll(ids []uint) ([]string, error) {
-	transaction, beginError := database.db.Begin()
-	if beginError != nil {
-		return nil, beginError
+	args := make([]string, 0, len(ids))
+	for _, id := range ids {
+		args = append(args, strconv.Itoa(int(id)))
 	}
-	defer transaction.Rollback()
-	statement, prepareError := transaction.Prepare("SELECT origin FROM urls WHERE id = $1")
-	if prepareError != nil {
-		return nil, prepareError
+	rows, queryError := database.db.Query("SELECT origin FROM urls WHERE id IN $1", fmt.Sprintf("(%s)", strings.Join(args, ", ")))
+	if queryError != nil {
+		return nil, queryError
 	}
-	defer statement.Close()
-	values := make([]string, len(ids))
-	for i, id := range ids {
-		row := statement.QueryRow(int64(id))
-		if row.Err() != nil {
-			return nil, row.Err()
+	defer rows.Close()
+	result := make([]string, 0, len(ids))
+	for rows.Next() {
+		var origin string
+		if err := rows.Scan(&origin); err != nil {
+			return nil, err
 		}
-		scanError := row.Scan(&values[i])
-		if scanError != nil {
-			return nil, scanError
-		}
+		result = append(result, origin)
 	}
-	commitError := transaction.Commit()
-	if commitError != nil {
-		return nil, commitError
-	}
-	return values, nil
+	return result, nil
 }
 
 func (database *PostgreSQLDatabase) Ping() error {
