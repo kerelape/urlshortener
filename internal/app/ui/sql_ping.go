@@ -22,14 +22,12 @@ func (ping *SQLPing) Route() http.Handler {
 	router.Get(
 		"/",
 		func(rw http.ResponseWriter, r *http.Request) {
+			status := http.StatusOK
 			pingError := ping.database.Ping()
 			if pingError != nil {
-				status := http.StatusInternalServerError
-				http.Error(rw, http.StatusText(status), status)
-			} else {
-				status := http.StatusOK
-				http.Error(rw, http.StatusText(status), status)
+				status = http.StatusInternalServerError
 			}
+			http.Error(rw, http.StatusText(status), status)
 		},
 	)
 	return router
