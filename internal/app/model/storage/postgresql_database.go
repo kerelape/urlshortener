@@ -89,6 +89,9 @@ func (database *PostgreSQLDatabase) GetAll(ctx context.Context, ids []uint) ([]s
 	if queryError != nil {
 		return nil, queryError
 	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
 	defer rows.Close()
 	result := make([]string, 0, len(ids))
 	for rows.Next() {
