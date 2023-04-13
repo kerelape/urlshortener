@@ -35,14 +35,14 @@ func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, http.StatusText(status), status)
 		return
 	}
-	var request []*batchAPIRequestNode
+	var request []batchAPIRequestNode
 	decodeError := json.NewDecoder(r.Body).Decode(&request)
 	if decodeError != nil {
 		status := http.StatusBadRequest
 		http.Error(rw, http.StatusText(status), status)
 		return
 	}
-	response := make([]*batchAPIResponseNode, len(request))
+	response := make([]batchAPIResponseNode, len(request))
 	origins := make([]string, len(request))
 	for i, requestNode := range request {
 		origins[i] = requestNode.OriginalURL
@@ -54,7 +54,7 @@ func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for i := range response {
-		response[i] = &batchAPIResponseNode{
+		response[i] = batchAPIResponseNode{
 			CorrelationID: request[i].CorrelationID,
 			ShortURL:      shorts[i],
 		}
