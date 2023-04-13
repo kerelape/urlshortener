@@ -54,12 +54,11 @@ func (api *URLsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if marshalError != nil {
 		http.Error(w, marshalError.Error(), http.StatusInternalServerError)
 		return
-	} else {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
-		w.WriteHeader(http.StatusOK)
-		w.Write(body)
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+	w.WriteHeader(http.StatusOK)
+	w.Write(body)
 }
 
 type historyNode struct {
