@@ -26,10 +26,11 @@ func SetToken(rw http.ResponseWriter, token Token) {
 	http.SetCookie(
 		rw,
 		&http.Cookie{
-			Name:    "token",
-			Value:   string(hex.EncodeToString(token[:])),
-			Expires: time.Now().Add(time.Hour * 24 * 60),
-			Path:    "/",
+			Name:     "token",
+			Value:    string(hex.EncodeToString(token[:])),
+			Expires:  time.Now().Add(time.Hour * 24 * 60),
+			Path:     "/",
+			HttpOnly: true,
 		},
 	)
 }
