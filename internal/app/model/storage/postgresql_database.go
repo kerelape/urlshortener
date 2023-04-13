@@ -24,7 +24,7 @@ func DialPostgreSQLDatabase(dsn string) (*PostgreSQLDatabase, error) {
 	if openError != nil {
 		return nil, openError
 	}
-	_, execError := db.Exec("CREATE TABLE IF NOT EXISTS urls(id SERIAL NOT NULL PRIMARY KEY, origin TEXT)")
+	_, execError := db.Exec("CREATE TABLE IF NOT EXISTS urls(id SERIAL NOT NULL PRIMARY KEY, origin TEXT UNIQUE)")
 	return NewPostgreSQLDatabase(db), execError
 }
 
