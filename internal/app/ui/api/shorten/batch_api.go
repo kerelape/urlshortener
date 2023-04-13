@@ -47,7 +47,7 @@ func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	for i, requestNode := range request {
 		origins[i] = requestNode.OriginalURL
 	}
-	shorts, shortenError := api.shortener.ShortenAll(origins)
+	shorts, shortenError := api.shortener.ShortenAll(r.Context(), origins)
 	if shortenError != nil {
 		status := http.StatusInternalServerError
 		http.Error(rw, http.StatusText(status), status)
@@ -60,10 +60,13 @@ func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 	for i := 0; i < len(response); i++ {
-		recordError := api.history.Record(user, &storage.HistoryNode{
-			OriginalURL: request[i].OriginalURL,
-			ShortURL:    response[i].ShortURL,
-		})
+		recordError := api.history.Record(
+			r.Context(),
+			user, storage.HistoryNode{
+				OriginalURL: request[i].OriginalURL,
+				ShortURL:    response[i].ShortURL,
+			},
+		)
 		if recordError != nil {
 			http.Error(rw, recordError.Error(), http.StatusInternalServerError)
 			return

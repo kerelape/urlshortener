@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"testing"
 
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
@@ -9,8 +10,8 @@ import (
 
 func TestAlphabetShortener(t *testing.T) {
 	shortener := NewAlphabetShortener(storage.NewFakeDatabase(), NewASCIIAlphabet(97, 122))
-	short, shortenError := shortener.Shorten("Hello, World!")
-	real, err := shortener.Reveal(short)
+	short, shortenError := shortener.Shorten(context.Background(), "Hello, World!")
+	real, err := shortener.Reveal(context.Background(), short)
 	require.Nil(t, err)
 	require.Nil(t, shortenError)
 	require.Equal(t, "Hello, World!", real)

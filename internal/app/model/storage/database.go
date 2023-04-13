@@ -1,13 +1,16 @@
 package storage
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type Database interface {
-	Put(value string) (uint, error)
-	Get(id uint) (string, error)
-	PutAll(values []string) ([]uint, error)
-	GetAll(ids []uint) ([]string, error)
-	Ping() error
+	Put(ctx context.Context, value string) (uint, error)
+	Get(ctx context.Context, id uint) (string, error)
+	PutAll(ctx context.Context, values []string) ([]uint, error)
+	GetAll(ctx context.Context, ids []uint) ([]string, error)
+	Ping(ctx context.Context) error
 }
 
 type DuplicateValueError struct {

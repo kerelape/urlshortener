@@ -2,6 +2,7 @@ package main
 
 import (
 	"compress/gzip"
+	"context"
 	"net/http"
 	"os"
 	"time"
@@ -59,7 +60,7 @@ func initLog() logging.Log {
 
 func initDatabase(config *app.Config) (storage.Database, error) {
 	if config.DatabaseDSN != "" {
-		return storage.DialPostgreSQLDatabase(config.DatabaseDSN)
+		return storage.DialPostgreSQLDatabase(context.Background(), config.DatabaseDSN)
 	}
 	var database storage.Database
 	if config.FileStoragePath == "" {

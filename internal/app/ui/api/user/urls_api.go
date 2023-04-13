@@ -35,7 +35,7 @@ func (api *URLsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if tokenError != nil {
 		panic(tokenError)
 	}
-	records, recordsError := api.history.GetRecordsByUser(token)
+	records, recordsError := api.history.GetRecordsByUser(r.Context(), token)
 	if recordsError != nil {
 		panic(recordsError)
 	}

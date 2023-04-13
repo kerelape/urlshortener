@@ -1,12 +1,15 @@
 package model
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type Shortener interface {
-	Shorten(origin string) (string, error)
-	Reveal(shortened string) (string, error)
-	ShortenAll(origins []string) ([]string, error)
-	RevealAll(shortened []string) ([]string, error)
+	Shorten(ctx context.Context, origin string) (string, error)
+	Reveal(ctx context.Context, shortened string) (string, error)
+	ShortenAll(ctx context.Context, origins []string) ([]string, error)
+	RevealAll(ctx context.Context, shortened []string) ([]string, error)
 }
 
 type DuplicateURLError struct {

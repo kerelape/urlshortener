@@ -1,10 +1,14 @@
 package storage
 
-import "github.com/kerelape/urlshortener/internal/app"
+import (
+	"context"
+
+	"github.com/kerelape/urlshortener/internal/app"
+)
 
 type History interface {
-	Record(user app.Token, node *HistoryNode) error
-	GetRecordsByUser(user app.Token) ([]*HistoryNode, error)
+	Record(ctx context.Context, user app.Token, node HistoryNode) error
+	GetRecordsByUser(ctx context.Context, user app.Token) ([]HistoryNode, error)
 }
 
 type HistoryNode struct {

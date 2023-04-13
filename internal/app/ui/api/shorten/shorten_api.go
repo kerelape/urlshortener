@@ -61,7 +61,7 @@ func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, unmarshalError.Error(), http.StatusBadRequest)
 		return
 	}
-	shortURL, shortenError := shorten.shortener.Shorten(req.URL)
+	shortURL, shortenError := shorten.shortener.Shorten(r.Context(), req.URL)
 	if shortenError != nil {
 		var duplicateError model.DuplicateURLError
 		if errors.As(shortenError, &duplicateError) {
@@ -90,8 +90,9 @@ func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	recordError := shorten.history.Record(
+		r.Context(),
 		user,
-		&storage.HistoryNode{
+		storage.HistoryNode{
 			OriginalURL: req.URL,
 			ShortURL:    shortURL,
 		},

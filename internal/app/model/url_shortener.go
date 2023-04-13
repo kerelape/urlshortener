@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"errors"
 	"strings"
 )
@@ -19,8 +20,8 @@ func NewURLShortener(origin Shortener, baseURL string, path string) *URLShortene
 	}
 }
 
-func (shortener *URLShortener) Shorten(origin string) (string, error) {
-	short, shortenError := shortener.Shortener.Shorten(origin)
+func (shortener *URLShortener) Shorten(ctx context.Context, origin string) (string, error) {
+	short, shortenError := shortener.Shortener.Shorten(ctx, origin)
 	var duplicate DuplicateURLError
 	if errors.As(shortenError, &duplicate) {
 		duplicate.Origin = shortener.BaseURL + shortener.Path + duplicate.Origin
@@ -29,12 +30,12 @@ func (shortener *URLShortener) Shorten(origin string) (string, error) {
 	return shortener.BaseURL + shortener.Path + short, shortenError
 }
 
-func (shortener *URLShortener) Reveal(shortened string) (string, error) {
-	return shortener.Shortener.Reveal(strings.TrimPrefix(shortened, shortener.BaseURL+shortener.Path))
+func (shortener *URLShortener) Reveal(ctx context.Context, shortened string) (string, error) {
+	return shortener.Shortener.Reveal(ctx, strings.TrimPrefix(shortened, shortener.BaseURL+shortener.Path))
 }
 
-func (shortener *URLShortener) ShortenAll(origins []string) ([]string, error) {
-	shorts, shortenError := shortener.Shortener.ShortenAll(origins)
+func (shortener *URLShortener) ShortenAll(ctx context.Context, origins []string) ([]string, error) {
+	shorts, shortenError := shortener.Shortener.ShortenAll(ctx, origins)
 	if shortenError != nil {
 		return nil, shortenError
 	}
@@ -44,11 +45,11 @@ func (shortener *URLShortener) ShortenAll(origins []string) ([]string, error) {
 	return shorts, nil
 }
 
-func (shortener *URLShortener) RevealAll(shortened []string) ([]string, error) {
+func (shortener *URLShortener) RevealAll(ctx context.Context, shortened []string) ([]string, error) {
 	for i, short := range shortened {
 		shortened[i] = strings.TrimPrefix(short, shortener.BaseURL+shortener.Path)
 	}
-	origins, revealError := shortener.Shortener.RevealAll(shortened)
+	origins, revealError := shortener.Shortener.RevealAll(ctx, shortened)
 	if revealError != nil {
 		return nil, revealError
 	}

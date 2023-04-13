@@ -23,7 +23,7 @@ func (ping *SQLPing) Route() http.Handler {
 		"/",
 		func(rw http.ResponseWriter, r *http.Request) {
 			status := http.StatusOK
-			pingError := ping.database.Ping()
+			pingError := ping.database.Ping(r.Context())
 			if pingError != nil {
 				status = http.StatusInternalServerError
 			}

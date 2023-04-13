@@ -35,7 +35,7 @@ func (application *App) Route() http.Handler {
 
 func (application *App) handleReveal(w http.ResponseWriter, r *http.Request) {
 	short := chi.URLParam(r, ShortURLParam)
-	origin, err := application.shortener.Reveal(short)
+	origin, err := application.shortener.Reveal(r.Context(), short)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -56,7 +56,7 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	short, shortenError := application.shortener.Shorten(url)
+	short, shortenError := application.shortener.Shorten(r.Context(), url)
 	if shortenError != nil {
 		duplicate := &model.DuplicateURLError{}
 		if errors.As(shortenError, duplicate) {
@@ -73,8 +73,9 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	recordError := application.history.Record(
+		r.Context(),
 		user,
-		&storage.HistoryNode{
+		storage.HistoryNode{
 			OriginalURL: url,
 			ShortURL:    short,
 		},

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/fs"
 	"os"
@@ -37,7 +38,7 @@ func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSiz
 	return NewFileDatabase(file, chunkSize), nil
 }
 
-func (database *FileDatabase) Put(value string) (uint, error) {
+func (database *FileDatabase) Put(ctx context.Context, value string) (uint, error) {
 	database.rw.Lock()
 	stat, statError := database.file.Stat()
 	database.rw.Unlock()
@@ -50,7 +51,7 @@ func (database *FileDatabase) Put(value string) (uint, error) {
 	id := stat.Size() / int64(database.chunkSize)
 	if id != 0 {
 		for i := uint(0); i < uint(id); i++ {
-			sameURL, err := database.Get(i)
+			sameURL, err := database.Get(ctx, i)
 			if err != nil {
 				return 0, err
 			}
@@ -66,7 +67,7 @@ func (database *FileDatabase) Put(value string) (uint, error) {
 	return uint(id), writeError
 }
 
-func (database *FileDatabase) Get(id uint) (string, error) {
+func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) {
 	database.rw.Lock()
 	defer database.rw.Unlock()
 	buffer := make([]byte, database.chunkSize)
@@ -78,10 +79,10 @@ func (database *FileDatabase) Get(id uint) (string, error) {
 	return value[:len(value)-1], readStringError
 }
 
-func (database *FileDatabase) PutAll(values []string) ([]uint, error) {
+func (database *FileDatabase) PutAll(ctx context.Context, values []string) ([]uint, error) {
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
-		id, putError := database.Put(values[i])
+		id, putError := database.Put(ctx, values[i])
 		if putError != nil {
 			var duplicate DuplicateValueError
 			if errors.As(putError, &duplicate) {
@@ -95,10 +96,10 @@ func (database *FileDatabase) PutAll(values []string) ([]uint, error) {
 	return result, nil
 }
 
-func (database *FileDatabase) GetAll(ids []uint) ([]string, error) {
+func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
 	result := make([]string, len(ids))
 	for i := 0; i < len(ids); i++ {
-		value, getError := database.Get(ids[i])
+		value, getError := database.Get(ctx, ids[i])
 		if getError != nil {
 			return nil, getError
 		}
@@ -107,6 +108,6 @@ func (database *FileDatabase) GetAll(ids []uint) ([]string, error) {
 	return result, nil
 }
 
-func (database *FileDatabase) Ping() error {
+func (database *FileDatabase) Ping(ctx context.Context) error {
 	return errors.New("FileDatabase")
 }
