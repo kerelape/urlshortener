@@ -34,7 +34,7 @@ func DialPostgreSQLDatabase(ctx context.Context, dsn string) (*PostgreSQLDatabas
 			id SERIAL NOT NULL PRIMARY KEY,
 			origin TEXT UNIQUE,
 			user TEXT,
-			deleted BOOLEAN,
+			deleted BOOLEAN
 		)
 		`,
 	)
