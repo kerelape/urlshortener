@@ -47,7 +47,7 @@ func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	for i, requestNode := range request {
 		origins[i] = requestNode.OriginalURL
 	}
-	shorts, shortenError := api.shortener.ShortenAll(r.Context(), origins)
+	shorts, shortenError := api.shortener.ShortenAll(r.Context(), user, origins)
 	if shortenError != nil {
 		status := http.StatusInternalServerError
 		http.Error(rw, http.StatusText(status), status)

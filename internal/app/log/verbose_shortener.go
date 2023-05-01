@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
 )
 
@@ -19,12 +20,12 @@ func NewVerboseShortener(origin model.Shortener, log Log) *VerboseShortener {
 	}
 }
 
-func (shortener *VerboseShortener) Shorten(ctx context.Context, origin string) (string, error) {
-	shortened, shortenError := shortener.Origin.Shorten(ctx, origin)
+func (shortener *VerboseShortener) Shorten(ctx context.Context, user app.Token, origin string) (string, error) {
+	shortened, shortenError := shortener.Origin.Shorten(ctx, user, origin)
 	if shortenError != nil {
-		shortener.Log.WriteFailure("Failed to shorten: " + shortenError.Error())
+		go shortener.Log.WriteFailure("Failed to shorten: " + shortenError.Error())
 	} else {
-		shortener.Log.WriteInfo(
+		go shortener.Log.WriteInfo(
 			fmt.Sprintf("Shorted \"%s\" to \"%s\"", origin, shortened),
 		)
 	}
@@ -34,23 +35,23 @@ func (shortener *VerboseShortener) Shorten(ctx context.Context, origin string) (
 func (shortener *VerboseShortener) Reveal(ctx context.Context, short string) (string, error) {
 	origin, err := shortener.Origin.Reveal(ctx, short)
 	if err != nil {
-		shortener.Log.WriteFailure(
+		go shortener.Log.WriteFailure(
 			fmt.Sprintf("Failed to reveal \"%s\"", short),
 		)
 	} else {
-		shortener.Log.WriteInfo(
+		go shortener.Log.WriteInfo(
 			fmt.Sprintf("Revealed \"%s\" from \"%s\"", origin, short),
 		)
 	}
 	return origin, err
 }
 
-func (shortener *VerboseShortener) ShortenAll(ctx context.Context, origins []string) ([]string, error) {
-	shortened, shortenError := shortener.Origin.ShortenAll(ctx, origins)
+func (shortener *VerboseShortener) ShortenAll(ctx context.Context, user app.Token, origins []string) ([]string, error) {
+	shortened, shortenError := shortener.Origin.ShortenAll(ctx, user, origins)
 	if shortenError != nil {
-		shortener.Log.WriteFailure("Failed to shorten: " + shortenError.Error())
+		go shortener.Log.WriteFailure("Failed to shorten: " + shortenError.Error())
 	} else {
-		shortener.Log.WriteInfo(
+		go shortener.Log.WriteInfo(
 			fmt.Sprintf(
 				"Shortened %d from:\n\t\t%v\n\tto:\n\t\t%v",
 				len(origins),
@@ -65,11 +66,11 @@ func (shortener *VerboseShortener) ShortenAll(ctx context.Context, origins []str
 func (shortener *VerboseShortener) RevealAll(ctx context.Context, shorts []string) ([]string, error) {
 	origins, revealError := shortener.Origin.RevealAll(ctx, shorts)
 	if revealError != nil {
-		shortener.Log.WriteFailure(
+		go shortener.Log.WriteFailure(
 			fmt.Sprintf("Failed to reveal: " + revealError.Error()),
 		)
 	} else {
-		shortener.Log.WriteInfo(
+		go shortener.Log.WriteInfo(
 			fmt.Sprintf(
 				"Revealed %d from:\n\t\t%v\n\tto:\n\t\t%v",
 				len(shorts),
@@ -79,4 +80,18 @@ func (shortener *VerboseShortener) RevealAll(ctx context.Context, shorts []strin
 		)
 	}
 	return origins, revealError
+}
+
+func (shortener *VerboseShortener) Delete(ctx context.Context, user app.Token, shorts []string) error {
+	err := shortener.Origin.Delete(ctx, user, shorts)
+	if err != nil {
+		go shortener.Log.WriteFailure("Failed to delete: " + err.Error())
+	} else {
+		go func() {
+			for _, s := range shorts {
+				shortener.Log.WriteInfo("Deleted url: " + s)
+			}
+		}()
+	}
+	return err
 }

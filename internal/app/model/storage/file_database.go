@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"os"
 	"sync"
+
+	"github.com/kerelape/urlshortener/internal/app"
 )
 
 var ErrTooLargeValue = errors.New("too large value")
@@ -38,7 +40,7 @@ func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSiz
 	return NewFileDatabase(file, chunkSize), nil
 }
 
-func (database *FileDatabase) Put(ctx context.Context, value string) (uint, error) {
+func (database *FileDatabase) Put(ctx context.Context, user app.Token, value string) (uint, error) {
 	database.rw.Lock()
 	stat, statError := database.file.Stat()
 	database.rw.Unlock()
@@ -79,10 +81,10 @@ func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) 
 	return value[:len(value)-1], readStringError
 }
 
-func (database *FileDatabase) PutAll(ctx context.Context, values []string) ([]uint, error) {
+func (database *FileDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
-		id, putError := database.Put(ctx, values[i])
+		id, putError := database.Put(ctx, user, values[i])
 		if putError != nil {
 			var duplicate DuplicateValueError
 			if errors.As(putError, &duplicate) {
@@ -106,6 +108,18 @@ func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string,
 		result[i] = value
 	}
 	return result, nil
+}
+
+func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uint) error {
+	database.rw.Lock()
+	defer database.rw.Unlock()
+	for _, i := range ids {
+		_, err := database.file.WriteAt([]byte(deletedValue), int64(i)*int64(database.chunkSize))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (database *FileDatabase) Ping(ctx context.Context) error {

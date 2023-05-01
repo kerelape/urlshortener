@@ -56,7 +56,12 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	short, shortenError := application.shortener.Shorten(r.Context(), url)
+	user, getTokenError := app.GetToken(r)
+	if getTokenError != nil {
+		http.Error(w, "No token", http.StatusUnauthorized)
+		return
+	}
+	short, shortenError := application.shortener.Shorten(r.Context(), user, url)
 	if shortenError != nil {
 		duplicate := &model.DuplicateURLError{}
 		if errors.As(shortenError, duplicate) {
@@ -65,11 +70,6 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
-		return
-	}
-	user, getTokenError := app.GetToken(r)
-	if getTokenError != nil {
-		http.Error(w, "No token", http.StatusUnauthorized)
 		return
 	}
 	recordError := application.history.Record(
