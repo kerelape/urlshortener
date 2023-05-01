@@ -32,20 +32,23 @@ func main() {
 	}
 	log := initLog()
 	address := config.ServerAddress
-	shortener := initShortener(database, log, &config)
-	service := initService(shortener, &config, log, history, database)
+	shortener := initShortener(database, history, log, &config)
+	service := initService(shortener, history, &config, log, database)
 	http.ListenAndServe(address, service)
 }
 
-func initShortener(database storage.Database, log logging.Log, config *app.Config) model.Shortener {
+func initShortener(database storage.Database, history model.History, log logging.Log, config *app.Config) model.Shortener {
 	return logging.NewVerboseShortener(
-		model.NewURLShortener(
-			model.NewAlphabetShortener(
-				database,
-				model.NewBase62Alphabet(),
+		model.NewRecordingShortener(
+			model.NewURLShortener(
+				model.NewAlphabetShortener(
+					database,
+					model.NewBase62Alphabet(),
+				),
+				config.BaseURL,
+				config.ShortenerPath,
 			),
-			config.BaseURL,
-			config.ShortenerPath,
+			history,
 		),
 		log,
 	)
@@ -75,20 +78,14 @@ func initDatabase(config *app.Config) (storage.Database, error) {
 	return database, nil
 }
 
-func initHistory() (storage.History, error) {
-	return storage.NewVirtualHistory(), nil
+func initHistory() (model.History, error) {
+	return model.NewFakeHistory(), nil
 }
 
-func initService(
-	model model.Shortener,
-	config *app.Config,
-	log logging.Log,
-	history storage.History,
-	database storage.Database,
-) http.Handler {
+func initService(model model.Shortener, history model.History, config *app.Config, log logging.Log, database storage.Database) http.Handler {
 	webUI := ui.NewWebUI(
 		map[string]ui.Entry{
-			config.ShortenerPath: ui.NewApp(model, history),
+			config.ShortenerPath: ui.NewApp(model),
 			config.APIPath:       api.NewAPI(model, history),
 			"/ping":              ui.NewSQLPing(database),
 		},
@@ -96,6 +93,7 @@ func initService(
 	router := chi.NewRouter()
 	router.Use(ui.Decompress())
 	router.Use(ui.Tokenize())
+	router.Use(ui.Authenticate())
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Mount("/", webUI.Route())
 	return router

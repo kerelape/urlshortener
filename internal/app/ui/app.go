@@ -7,22 +7,18 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
-	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
 const ShortURLParam = "short"
 
 type App struct {
 	shortener model.Shortener
-	history   storage.History
 }
 
-func NewApp(shortener model.Shortener, history storage.History) *App {
+func NewApp(shortener model.Shortener) *App {
 	return &App{
 		shortener: shortener,
-		history:   history,
 	}
 }
 
@@ -65,23 +61,6 @@ func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.Error(w, shortenError.Error(), http.StatusInternalServerError)
-		return
-	}
-	user, getTokenError := app.GetToken(r)
-	if getTokenError != nil {
-		http.Error(w, "No token", http.StatusUnauthorized)
-		return
-	}
-	recordError := application.history.Record(
-		r.Context(),
-		user,
-		storage.HistoryNode{
-			OriginalURL: url,
-			ShortURL:    short,
-		},
-	)
-	if recordError != nil {
-		http.Error(w, recordError.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(short)))

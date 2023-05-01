@@ -5,20 +5,16 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
-	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
 type BatchAPI struct {
 	shortener model.Shortener
-	history   storage.History
 }
 
-func NewBatchAPI(shortener model.Shortener, history storage.History) *BatchAPI {
+func NewBatchAPI(shortener model.Shortener) *BatchAPI {
 	return &BatchAPI{
 		shortener: shortener,
-		history:   history,
 	}
 }
 
@@ -29,12 +25,6 @@ func (api *BatchAPI) Route() http.Handler {
 }
 
 func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	user, userError := app.GetToken(r)
-	if userError != nil {
-		status := http.StatusUnauthorized
-		http.Error(rw, http.StatusText(status), status)
-		return
-	}
 	var request []batchAPIRequestNode
 	decodeError := json.NewDecoder(r.Body).Decode(&request)
 	if decodeError != nil {
@@ -57,19 +47,6 @@ func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		response[i] = batchAPIResponseNode{
 			CorrelationID: request[i].CorrelationID,
 			ShortURL:      shorts[i],
-		}
-	}
-	for i := 0; i < len(response); i++ {
-		recordError := api.history.Record(
-			r.Context(),
-			user, storage.HistoryNode{
-				OriginalURL: request[i].OriginalURL,
-				ShortURL:    response[i].ShortURL,
-			},
-		)
-		if recordError != nil {
-			http.Error(rw, recordError.Error(), http.StatusInternalServerError)
-			return
 		}
 	}
 	rw.Header().Set("Content-Type", "application/json")

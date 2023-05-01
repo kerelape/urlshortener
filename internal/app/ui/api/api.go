@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/kerelape/urlshortener/internal/app/model"
-	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 	"github.com/kerelape/urlshortener/internal/app/ui/api/shorten"
 	"github.com/kerelape/urlshortener/internal/app/ui/api/user"
@@ -16,9 +15,9 @@ type API struct {
 	user    ui.Entry
 }
 
-func NewAPI(shortener model.Shortener, history storage.History) *API {
+func NewAPI(shortener model.Shortener, history model.History) *API {
 	return &API{
-		shorten: shorten.NewShortenAPI(shortener, history),
+		shorten: shorten.NewShortenAPI(shortener),
 		user:    user.NewUserAPI(history),
 	}
 }

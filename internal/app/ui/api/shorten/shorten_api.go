@@ -8,15 +8,12 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model"
-	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
 
 type ShortenAPI struct {
 	shortener model.Shortener
-	history   storage.History
 	batch     ui.Entry
 }
 
@@ -30,11 +27,10 @@ type (
 	}
 )
 
-func NewShortenAPI(shortener model.Shortener, history storage.History) *ShortenAPI {
+func NewShortenAPI(shortener model.Shortener) *ShortenAPI {
 	return &ShortenAPI{
 		shortener: shortener,
-		history:   history,
-		batch:     NewBatchAPI(shortener, history),
+		batch:     NewBatchAPI(shortener),
 	}
 }
 
@@ -82,23 +78,6 @@ func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	resp, marhsalRespError := json.Marshal(shortenResponse{Result: shortURL})
 	if marhsalRespError != nil {
 		http.Error(w, marhsalRespError.Error(), http.StatusInternalServerError)
-		return
-	}
-	user, getTokenError := app.GetToken(r)
-	if getTokenError != nil {
-		http.Error(w, "No token", http.StatusUnauthorized)
-		return
-	}
-	recordError := shorten.history.Record(
-		r.Context(),
-		user,
-		storage.HistoryNode{
-			OriginalURL: req.URL,
-			ShortURL:    shortURL,
-		},
-	)
-	if recordError != nil {
-		http.Error(w, recordError.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")

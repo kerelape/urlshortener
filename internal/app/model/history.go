@@ -1,10 +1,13 @@
-package storage
+package model
 
 import (
 	"context"
+	"errors"
 
 	"github.com/kerelape/urlshortener/internal/app"
 )
+
+var ErrUserNotFound = errors.New("user not found")
 
 type History interface {
 	Record(ctx context.Context, user app.Token, node HistoryNode) error
@@ -12,6 +15,6 @@ type History interface {
 }
 
 type HistoryNode struct {
-	OriginalURL string
-	ShortURL    string
+	From string
+	To   string
 }
