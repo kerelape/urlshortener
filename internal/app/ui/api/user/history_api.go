@@ -19,10 +19,10 @@ func NewURLsAPI(history model.History) URLsAPI {
 	return URLsAPI{history}
 }
 
-func (h URLsAPI) Route() http.Handler {
+func (urls URLsAPI) Route() http.Handler {
 	router := chi.NewRouter()
-	router.Get("/", h.History)
-	router.Delete("/", h.Delete)
+	router.Get("/", urls.History)
+	router.Delete("/", urls.Delete)
 	return router
 }
 
