@@ -27,7 +27,7 @@ func (fh FakeHistory) Record(ctx context.Context, user app.Token, node HistoryNo
 func (fh FakeHistory) GetRecordsByUser(ctx context.Context, user app.Token) ([]HistoryNode, error) {
 	records, ok := fh.records[user]
 	if !ok {
-		return nil, ErrUserNotFound
+		return []HistoryNode{}, nil
 	}
 	return records, nil
 }
