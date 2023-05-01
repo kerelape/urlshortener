@@ -33,7 +33,7 @@ func DialPostgreSQLDatabase(ctx context.Context, dsn string) (*PostgreSQLDatabas
 		CREATE TABLE IF NOT EXISTS urls(
 			id SERIAL NOT NULL PRIMARY KEY,
 			origin TEXT UNIQUE,
-			user TEXT,
+			"user" TEXT,
 			deleted BOOLEAN
 		)
 		`,
@@ -52,7 +52,7 @@ func (database *PostgreSQLDatabase) Put(ctx context.Context, user app.Token, val
 	}
 	row := database.db.QueryRowContext(
 		ctx,
-		"INSERT INTO urls(origin, user) VALUES($1, $2) RETURNING id",
+		`INSERT INTO urls(origin, "user") VALUES($1, $2) RETURNING id`,
 		value,
 		base32.StdEncoding.EncodeToString(user[:]),
 	)
@@ -84,7 +84,7 @@ func (database *PostgreSQLDatabase) PutAll(ctx context.Context, user app.Token, 
 		return nil, beginError
 	}
 	defer transaction.Rollback()
-	statement, prepareError := transaction.PrepareContext(ctx, "INSERT INTO urls(origin, user) VALUES($1, $2) RETURNING id")
+	statement, prepareError := transaction.PrepareContext(ctx, `INSERT INTO urls(origin, "user") VALUES($1, $2) RETURNING id`)
 	if prepareError != nil {
 		return nil, prepareError
 	}
@@ -136,7 +136,7 @@ func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, 
 	defer transaction.Rollback()
 	statement, prepareError := transaction.PrepareContext(
 		ctx,
-		"INSERT INTO urls(deleted) VALUES($1) WHERE user = $2 AND id = $3",
+		`INSERT INTO urls(deleted) VALUES($1) WHERE "user" = $2 AND id = $3`,
 	)
 	if prepareError != nil {
 		return prepareError
