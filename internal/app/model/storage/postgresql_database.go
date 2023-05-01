@@ -34,7 +34,7 @@ func DialPostgreSQLDatabase(ctx context.Context, dsn string) (*PostgreSQLDatabas
 			id SERIAL NOT NULL PRIMARY KEY,
 			origin TEXT UNIQUE,
 			"user" TEXT,
-			deleted BOOLEAN
+			deleted BOOLEAN DEFAULT FALSE
 		)
 		`,
 	)
@@ -68,9 +68,8 @@ func (database *PostgreSQLDatabase) Get(ctx context.Context, id uint) (string, e
 	row := database.db.QueryRowContext(ctx, "SELECT origin, deleted FROM urls WHERE id = $1", int64(id))
 	var origin string
 	var deleted bool
-	scanError := row.Scan(&origin, &deleted)
-	if scanError != nil {
-		return "", nil
+	if err := row.Scan(&origin, &deleted); err != nil {
+		return "", err
 	}
 	if deleted {
 		return "", ErrValueDeleted
