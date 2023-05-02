@@ -26,7 +26,7 @@ func NewURLsAPI(history storage.History, shortener model.Shortener) *URLsAPI {
 func (api *URLsAPI) Route() http.Handler {
 	router := chi.NewRouter()
 	router.Get("/", api.History)
-	router.Post("/", api.Delete)
+	router.Delete("/", api.Delete)
 	return router
 }
 
