@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/kerelape/urlshortener/internal/app"
@@ -78,6 +79,9 @@ func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) 
 		return "", readError
 	}
 	value, readStringError := bytes.NewBuffer(buffer).ReadString(0x00)
+	if strings.HasPrefix(value, deletedValue) {
+		return "", ErrValueDeleted
+	}
 	return value[:len(value)-1], readStringError
 }
 
