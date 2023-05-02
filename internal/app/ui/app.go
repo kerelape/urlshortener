@@ -37,6 +37,10 @@ func (application *App) handleReveal(w http.ResponseWriter, r *http.Request) {
 	short := chi.URLParam(r, ShortURLParam)
 	origin, err := application.shortener.Reveal(r.Context(), short)
 	if err != nil {
+		if errors.Is(err, storage.ErrValueDeleted) {
+			w.WriteHeader(http.StatusGone)
+			return
+		}
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
