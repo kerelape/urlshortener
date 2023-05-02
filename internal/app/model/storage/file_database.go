@@ -55,7 +55,7 @@ func (database *FileDatabase) Put(ctx context.Context, user app.Token, value str
 	if id != 0 {
 		for i := uint(0); i < uint(id); i++ {
 			sameURL, err := database.Get(ctx, i)
-			if err != nil {
+			if err != nil && !errors.Is(err, ErrValueDeleted) {
 				return 0, err
 			}
 			if sameURL == value {
