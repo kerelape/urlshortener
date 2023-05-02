@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 )
@@ -12,9 +13,9 @@ type UserAPI struct {
 	urls ui.Entry
 }
 
-func NewUserAPI(history storage.History) *UserAPI {
+func NewUserAPI(history storage.History, shortener model.Shortener) *UserAPI {
 	return &UserAPI{
-		urls: NewURLsAPI(history),
+		urls: NewURLsAPI(history, shortener),
 	}
 }
 
