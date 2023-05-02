@@ -135,7 +135,7 @@ func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, 
 	defer transaction.Rollback()
 	statement, prepareError := transaction.PrepareContext(
 		ctx,
-		`INSERT INTO urls(deleted) VALUES($1) WHERE "user" = $2 AND id = $3`,
+		`UPDATE urls SET deleted = $1 WHERE "user" = $2 AND id = $3`,
 	)
 	if prepareError != nil {
 		return prepareError
