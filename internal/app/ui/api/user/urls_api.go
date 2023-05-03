@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -79,7 +80,7 @@ func (api *URLsAPI) Delete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(status), status)
 		return
 	}
-	go api.shortener.Delete(r.Context(), user, urls)
+	go api.shortener.Delete(context.Background(), user, urls)
 	w.WriteHeader(http.StatusAccepted)
 }
 
