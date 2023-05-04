@@ -61,7 +61,13 @@ func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, unmarshalError.Error(), http.StatusBadRequest)
 		return
 	}
-	shortURL, shortenError := shorten.shortener.Shorten(r.Context(), req.URL)
+	user, userError := app.GetToken(r)
+	if userError != nil {
+		status := http.StatusUnauthorized
+		http.Error(w, http.StatusText(status), status)
+		return
+	}
+	shortURL, shortenError := shorten.shortener.Shorten(r.Context(), user, req.URL)
 	if shortenError != nil {
 		var duplicateError model.DuplicateURLError
 		if errors.As(shortenError, &duplicateError) {

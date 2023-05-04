@@ -3,11 +3,13 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"encoding/base32"
 	"fmt"
 	"strconv"
 	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/kerelape/urlshortener/internal/app"
 )
 
 type PostgreSQLDatabase struct {
@@ -25,11 +27,21 @@ func DialPostgreSQLDatabase(ctx context.Context, dsn string) (*PostgreSQLDatabas
 	if openError != nil {
 		return nil, openError
 	}
-	_, execError := db.ExecContext(ctx, "CREATE TABLE IF NOT EXISTS urls(id SERIAL NOT NULL PRIMARY KEY, origin TEXT UNIQUE)")
+	_, execError := db.ExecContext(
+		ctx,
+		`
+		CREATE TABLE IF NOT EXISTS urls(
+			id SERIAL NOT NULL PRIMARY KEY,
+			origin TEXT UNIQUE,
+			"user" TEXT,
+			deleted BOOLEAN DEFAULT FALSE
+		)
+		`,
+	)
 	return NewPostgreSQLDatabase(db), execError
 }
 
-func (database *PostgreSQLDatabase) Put(ctx context.Context, value string) (uint, error) {
+func (database *PostgreSQLDatabase) Put(ctx context.Context, user app.Token, value string) (uint, error) {
 	same := database.db.QueryRowContext(ctx, "SELECT id FROM urls WHERE origin = $1", value)
 	if same.Err() != nil {
 		return 0, same.Err()
@@ -38,7 +50,12 @@ func (database *PostgreSQLDatabase) Put(ctx context.Context, value string) (uint
 	if err := same.Scan(&sameID); err == nil {
 		return 0, NewDuplicateValueError(uint(sameID))
 	}
-	row := database.db.QueryRowContext(ctx, "INSERT INTO urls(origin) VALUES($1) RETURNING id", value)
+	row := database.db.QueryRowContext(
+		ctx,
+		`INSERT INTO urls(origin, "user") VALUES($1, $2) RETURNING id`,
+		value,
+		base32.StdEncoding.EncodeToString(user[:]),
+	)
 	if row.Err() != nil {
 		return 0, row.Err()
 	}
@@ -48,26 +65,32 @@ func (database *PostgreSQLDatabase) Put(ctx context.Context, value string) (uint
 }
 
 func (database *PostgreSQLDatabase) Get(ctx context.Context, id uint) (string, error) {
-	row := database.db.QueryRowContext(ctx, "SELECT origin FROM urls WHERE id = $1", int64(id))
+	row := database.db.QueryRowContext(ctx, "SELECT origin, deleted FROM urls WHERE id = $1", int64(id))
 	var origin string
-	scanError := row.Scan(&origin)
-	return origin, scanError
+	var deleted bool
+	if err := row.Scan(&origin, &deleted); err != nil {
+		return "", err
+	}
+	if deleted {
+		return "", ErrValueDeleted
+	}
+	return origin, nil
 }
 
-func (database *PostgreSQLDatabase) PutAll(ctx context.Context, values []string) ([]uint, error) {
+func (database *PostgreSQLDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
 	transaction, beginError := database.db.Begin()
 	if beginError != nil {
 		return nil, beginError
 	}
 	defer transaction.Rollback()
-	statement, prepareError := transaction.PrepareContext(ctx, "INSERT INTO urls(origin) VALUES($1) RETURNING id")
+	statement, prepareError := transaction.PrepareContext(ctx, `INSERT INTO urls(origin, "user") VALUES($1, $2) RETURNING id`)
 	if prepareError != nil {
 		return nil, prepareError
 	}
 	defer statement.Close()
 	ids := make([]uint, len(values))
 	for i, value := range values {
-		row := statement.QueryRowContext(ctx, value)
+		row := statement.QueryRowContext(ctx, value, base32.StdEncoding.EncodeToString(user[:]))
 		if row.Err() != nil {
 			return nil, row.Err()
 		}
@@ -102,6 +125,33 @@ func (database *PostgreSQLDatabase) GetAll(ctx context.Context, ids []uint) ([]s
 		result = append(result, origin)
 	}
 	return result, nil
+}
+
+func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, ids []uint) error {
+	transaction, beginError := database.db.Begin()
+	if beginError != nil {
+		return beginError
+	}
+	defer transaction.Rollback()
+	statement, prepareError := transaction.PrepareContext(
+		ctx,
+		`UPDATE urls SET deleted = $1 WHERE "user" = $2 AND id = $3`,
+	)
+	if prepareError != nil {
+		return prepareError
+	}
+	defer statement.Close()
+	for _, id := range ids {
+		row := statement.QueryRowContext(ctx, true, base32.StdEncoding.EncodeToString(user[:]), id)
+		if row.Err() != nil {
+			return row.Err()
+		}
+	}
+	commitError := transaction.Commit()
+	if commitError != nil {
+		return commitError
+	}
+	return nil
 }
 
 func (database *PostgreSQLDatabase) Ping(ctx context.Context) error {

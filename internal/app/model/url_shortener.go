@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"strings"
+
+	"github.com/kerelape/urlshortener/internal/app"
 )
 
 type URLShortener struct {
@@ -20,8 +22,8 @@ func NewURLShortener(origin Shortener, baseURL string, path string) *URLShortene
 	}
 }
 
-func (shortener *URLShortener) Shorten(ctx context.Context, origin string) (string, error) {
-	short, shortenError := shortener.Shortener.Shorten(ctx, origin)
+func (shortener *URLShortener) Shorten(ctx context.Context, user app.Token, origin string) (string, error) {
+	short, shortenError := shortener.Shortener.Shorten(ctx, user, origin)
 	var duplicate DuplicateURLError
 	if errors.As(shortenError, &duplicate) {
 		duplicate.Origin = shortener.BaseURL + shortener.Path + duplicate.Origin
@@ -34,8 +36,8 @@ func (shortener *URLShortener) Reveal(ctx context.Context, shortened string) (st
 	return shortener.Shortener.Reveal(ctx, strings.TrimPrefix(shortened, shortener.BaseURL+shortener.Path))
 }
 
-func (shortener *URLShortener) ShortenAll(ctx context.Context, origins []string) ([]string, error) {
-	shorts, shortenError := shortener.Shortener.ShortenAll(ctx, origins)
+func (shortener *URLShortener) ShortenAll(ctx context.Context, user app.Token, origins []string) ([]string, error) {
+	shorts, shortenError := shortener.Shortener.ShortenAll(ctx, user, origins)
 	if shortenError != nil {
 		return nil, shortenError
 	}
@@ -54,4 +56,11 @@ func (shortener *URLShortener) RevealAll(ctx context.Context, shortened []string
 		return nil, revealError
 	}
 	return origins, nil
+}
+
+func (shortener *URLShortener) Delete(ctx context.Context, user app.Token, shortened []string) error {
+	for i, short := range shortened {
+		shortened[i] = strings.TrimPrefix(short, shortener.BaseURL+shortener.Path)
+	}
+	return shortener.Shortener.Delete(ctx, user, shortened)
 }

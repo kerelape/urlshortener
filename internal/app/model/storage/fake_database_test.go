@@ -4,19 +4,20 @@ import (
 	"context"
 	"testing"
 
+	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFakeDatabase_Put(t *testing.T) {
 	db := NewFakeDatabase()
-	id, putError := db.Put(context.Background(), "")
+	id, putError := db.Put(context.Background(), app.NewToken(), "")
 	require.Nil(t, putError)
 	require.Equal(t, uint(0), id)
 }
 
 func TestFakeDatabase_Get(t *testing.T) {
 	db := NewFakeDatabase()
-	id, putError := db.Put(context.Background(), "Hello, World!")
+	id, putError := db.Put(context.Background(), app.NewToken(), "Hello, World!")
 	r, err := db.Get(context.Background(), id)
 	require.Nil(t, err)
 	require.Nil(t, putError)

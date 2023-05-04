@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/kerelape/urlshortener/internal/app"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
@@ -43,8 +44,8 @@ func (shortener *AlphabetShortener) decode(encoded string) uint {
 	return result
 }
 
-func (shortener *AlphabetShortener) Shorten(ctx context.Context, origin string) (string, error) {
-	number, putError := shortener.Database.Put(ctx, origin)
+func (shortener *AlphabetShortener) Shorten(ctx context.Context, user app.Token, origin string) (string, error) {
+	number, putError := shortener.Database.Put(ctx, user, origin)
 	if putError != nil {
 		var duplicate storage.DuplicateValueError
 		if errors.As(putError, &duplicate) {
@@ -59,8 +60,8 @@ func (shortener *AlphabetShortener) Reveal(ctx context.Context, shortened string
 	return shortener.Database.Get(ctx, shortener.decode(shortened))
 }
 
-func (shortener *AlphabetShortener) ShortenAll(ctx context.Context, origins []string) ([]string, error) {
-	ids, putError := shortener.Database.PutAll(ctx, origins)
+func (shortener *AlphabetShortener) ShortenAll(ctx context.Context, user app.Token, origins []string) ([]string, error) {
+	ids, putError := shortener.Database.PutAll(ctx, user, origins)
 	if putError != nil {
 		return nil, putError
 	}
@@ -81,4 +82,12 @@ func (shortener *AlphabetShortener) RevealAll(ctx context.Context, shortened []s
 		return nil, getError
 	}
 	return values, nil
+}
+
+func (shortener *AlphabetShortener) Delete(ctx context.Context, user app.Token, shortened []string) error {
+	ids := make([]uint, len(shortened))
+	for _, id := range shortened {
+		ids = append(ids, shortener.decode(id))
+	}
+	return shortener.Database.Delete(ctx, user, ids)
 }

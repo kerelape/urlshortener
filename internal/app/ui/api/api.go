@@ -19,7 +19,7 @@ type API struct {
 func NewAPI(shortener model.Shortener, history storage.History) *API {
 	return &API{
 		shorten: shorten.NewShortenAPI(shortener, history),
-		user:    user.NewUserAPI(history),
+		user:    user.NewUserAPI(history, shortener),
 	}
 }
 

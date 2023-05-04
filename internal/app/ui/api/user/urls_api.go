@@ -1,32 +1,37 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/kerelape/urlshortener/internal/app"
+	"github.com/kerelape/urlshortener/internal/app/model"
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
 type URLsAPI struct {
-	history storage.History
+	history   storage.History
+	shortener model.Shortener
 }
 
-func NewURLsAPI(history storage.History) *URLsAPI {
+func NewURLsAPI(history storage.History, shortener model.Shortener) *URLsAPI {
 	return &URLsAPI{
-		history: history,
+		history:   history,
+		shortener: shortener,
 	}
 }
 
 func (api *URLsAPI) Route() http.Handler {
 	router := chi.NewRouter()
-	router.Get("/", api.ServeHTTP)
+	router.Get("/", api.History)
+	router.Delete("/", api.Delete)
 	return router
 }
 
-func (api *URLsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (api *URLsAPI) History(w http.ResponseWriter, r *http.Request) {
 	tokenCookie, tokenCookieError := r.Cookie("token")
 	if tokenCookieError != nil {
 		panic(tokenCookieError)
@@ -59,6 +64,24 @@ func (api *URLsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 	w.WriteHeader(http.StatusOK)
 	w.Write(body)
+}
+
+func (api *URLsAPI) Delete(w http.ResponseWriter, r *http.Request) {
+	user, userError := app.GetToken(r)
+	if userError != nil {
+		status := http.StatusUnauthorized
+		http.Error(w, http.StatusText(status), status)
+		return
+	}
+	urls := []string{}
+	urlsError := json.NewDecoder(r.Body).Decode(&urls)
+	if urlsError != nil {
+		status := http.StatusBadRequest
+		http.Error(w, http.StatusText(status), status)
+		return
+	}
+	go api.shortener.Delete(context.Background(), user, urls)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 type historyNode struct {

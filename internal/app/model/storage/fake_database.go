@@ -3,7 +3,11 @@ package storage
 import (
 	"context"
 	"errors"
+
+	"github.com/kerelape/urlshortener/internal/app"
 )
+
+const deletedValue = "__DELETED"
 
 type FakeDatabase struct {
 	Values []string
@@ -14,9 +18,9 @@ func NewFakeDatabase() *FakeDatabase {
 	return &FakeDatabase{}
 }
 
-func (database *FakeDatabase) Put(ctx context.Context, value string) (uint, error) {
-	for i, u := range database.Values {
-		if u == value {
+func (database *FakeDatabase) Put(ctx context.Context, _ app.Token, value string) (uint, error) {
+	for i, v := range database.Values {
+		if v == value {
 			return 0, NewDuplicateValueError(uint(i))
 		}
 	}
@@ -28,13 +32,17 @@ func (database *FakeDatabase) Get(ctx context.Context, id uint) (string, error) 
 	if id >= uint(len(database.Values)) {
 		return "", errors.New("element does not exist")
 	}
-	return database.Values[id], nil
+	value := database.Values[id]
+	if value == deletedValue {
+		return "", ErrValueDeleted
+	}
+	return value, nil
 }
 
-func (database *FakeDatabase) PutAll(ctx context.Context, values []string) ([]uint, error) {
+func (database *FakeDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
-		id, putError := database.Put(ctx, values[i])
+		id, putError := database.Put(ctx, user, values[i])
 		if putError != nil {
 			return nil, putError
 		}
@@ -53,6 +61,13 @@ func (database *FakeDatabase) GetAll(ctx context.Context, ids []uint) ([]string,
 		result[i] = value
 	}
 	return result, nil
+}
+
+func (database *FakeDatabase) Delete(ctx context.Context, _ app.Token, ids []uint) error {
+	for _, i := range ids {
+		database.Values[i] = deletedValue
+	}
+	return nil
 }
 
 func (database *FakeDatabase) Ping(ctx context.Context) error {

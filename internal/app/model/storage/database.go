@@ -2,14 +2,20 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/kerelape/urlshortener/internal/app"
 )
 
+var ErrValueDeleted = errors.New("deleted")
+
 type Database interface {
-	Put(ctx context.Context, value string) (uint, error)
+	Put(ctx context.Context, user app.Token, value string) (uint, error)
 	Get(ctx context.Context, id uint) (string, error)
-	PutAll(ctx context.Context, values []string) ([]uint, error)
+	PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error)
 	GetAll(ctx context.Context, ids []uint) ([]string, error)
+	Delete(ctx context.Context, user app.Token, ids []uint) error
 	Ping(ctx context.Context) error
 }
 
