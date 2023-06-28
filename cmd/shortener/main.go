@@ -15,6 +15,8 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 	"github.com/kerelape/urlshortener/internal/app/ui/api"
+
+	"net/http/pprof"
 )
 
 func main() {
@@ -98,5 +100,6 @@ func initService(
 	router.Use(ui.Tokenize())
 	router.Use(middleware.Compress(gzip.BestCompression))
 	router.Mount("/", webUI.Route())
+	router.Mount("/debug/pprof", http.HandlerFunc(pprof.Index))
 	return router
 }
