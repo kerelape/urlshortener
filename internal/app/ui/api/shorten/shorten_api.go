@@ -45,6 +45,7 @@ func (shorten *ShortenAPI) Route() http.Handler {
 	return router
 }
 
+// ServeHTTP shortens a URL and returns the short result.
 func (shorten *ShortenAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "Invalid content type", http.StatusBadRequest)

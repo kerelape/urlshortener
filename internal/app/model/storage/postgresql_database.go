@@ -12,16 +12,20 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
+// PostgreSQLDatabase is a database that stores data in a Postgres database.
 type PostgreSQLDatabase struct {
 	db *sql.DB
 }
 
+// NewPostgreSQLDatabase returns a new PostgreSQLDatabase.
 func NewPostgreSQLDatabase(db *sql.DB) *PostgreSQLDatabase {
 	return &PostgreSQLDatabase{
 		db: db,
 	}
 }
 
+// DialPostgreSQLDatabase connects to a Postgres database by the dsn
+// and initializes it.
 func DialPostgreSQLDatabase(ctx context.Context, dsn string) (*PostgreSQLDatabase, error) {
 	db, openError := sql.Open("pgx", dsn)
 	if openError != nil {

@@ -31,6 +31,7 @@ func (api *URLsAPI) Route() http.Handler {
 	return router
 }
 
+// History returns all records by the user.
 func (api *URLsAPI) History(w http.ResponseWriter, r *http.Request) {
 	tokenCookie, tokenCookieError := r.Cookie("token")
 	if tokenCookieError != nil {

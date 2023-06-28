@@ -9,6 +9,7 @@ import (
 
 const deletedValue = "__DELETED"
 
+// FakeDatabase is a database that stores values in RAM.
 type FakeDatabase struct {
 	Values []string
 }

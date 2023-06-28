@@ -28,6 +28,7 @@ func (api *BatchAPI) Route() http.Handler {
 	return router
 }
 
+// ServeHTTP shortens many URL and returns an array of short ones.
 func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	user, userError := app.GetToken(r)
 	if userError != nil {

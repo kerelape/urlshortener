@@ -12,8 +12,10 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
+// ErrTooLargeValue is returned when the provided stirng is to long.
 var ErrTooLargeValue = errors.New("too large value")
 
+// FileDatabase is a database that stores values in a file.
 type FileDatabase struct {
 	file      *os.File
 	rw        sync.Mutex
@@ -21,6 +23,7 @@ type FileDatabase struct {
 	chunkSize int
 }
 
+// NewFileDatabase returns a new FileDatabase.
 func NewFileDatabase(file *os.File, chunkSize int) *FileDatabase {
 	return &FileDatabase{
 		file:      file,
@@ -29,6 +32,7 @@ func NewFileDatabase(file *os.File, chunkSize int) *FileDatabase {
 	}
 }
 
+// OpenFileDatabase opens a file and returned a new FileDatabase associated with the file.
 func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSize int) (*FileDatabase, error) {
 	flag := os.O_RDWR
 	if create {

@@ -11,14 +11,27 @@ import (
 var ErrValueDeleted = errors.New("deleted")
 
 type Database interface {
+	// Put stores the given string value and returns its id.
 	Put(ctx context.Context, user app.Token, value string) (uint, error)
+
+	// Get returns the stored string by id.
 	Get(ctx context.Context, id uint) (string, error)
+
+	// PutAll stores many strings and returns their ids in the same order.
 	PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error)
+
+	// GetAll returns the stored strings by the ids.
 	GetAll(ctx context.Context, ids []uint) ([]string, error)
+
+	// Delete removes a string by its id from the database.
 	Delete(ctx context.Context, user app.Token, ids []uint) error
+
+	// Ping returns an error if the database is unavailable.
 	Ping(ctx context.Context) error
 }
 
+// DuplicateValueError is returned when trying to put a string
+// into the database that has already been added.
 type DuplicateValueError struct {
 	Origin uint
 }

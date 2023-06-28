@@ -28,12 +28,13 @@ func NewApp(shortener model.Shortener, history storage.History) *App {
 
 func (application *App) Route() http.Handler {
 	router := chi.NewRouter()
-	router.Get(fmt.Sprintf("/{%s}", ShortURLParam), application.handleReveal)
-	router.Post("/", application.handleShorten)
+	router.Get(fmt.Sprintf("/{%s}", ShortURLParam), application.HandleReveal)
+	router.Post("/", application.HandleShorten)
 	return router
 }
 
-func (application *App) handleReveal(w http.ResponseWriter, r *http.Request) {
+// HandleReveal redirects to the original URL behind the short url name.
+func (application *App) HandleReveal(w http.ResponseWriter, r *http.Request) {
 	short := chi.URLParam(r, ShortURLParam)
 	origin, err := application.shortener.Reveal(r.Context(), short)
 	if err != nil {
@@ -49,7 +50,8 @@ func (application *App) handleReveal(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
+// HandleShorten shortens a URL provided in the request body.
+func (application *App) HandleShorten(w http.ResponseWriter, r *http.Request) {
 	origin, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

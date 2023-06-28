@@ -13,6 +13,7 @@ type (
 	}
 )
 
+// Decompress is a middleware that decompresses gzip compressed bodies of incoming connections.
 func Decompress() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
