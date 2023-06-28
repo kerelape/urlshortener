@@ -19,6 +19,7 @@ func NewFakeDatabase() *FakeDatabase {
 	return &FakeDatabase{}
 }
 
+// Put stores value and returns its id.
 func (database *FakeDatabase) Put(ctx context.Context, _ app.Token, value string) (uint, error) {
 	for i, v := range database.Values {
 		if v == value {
@@ -29,6 +30,7 @@ func (database *FakeDatabase) Put(ctx context.Context, _ app.Token, value string
 	return uint(len(database.Values) - 1), nil
 }
 
+// Get returns original value by its id.
 func (database *FakeDatabase) Get(ctx context.Context, id uint) (string, error) {
 	if id >= uint(len(database.Values)) {
 		return "", errors.New("element does not exist")
@@ -40,6 +42,7 @@ func (database *FakeDatabase) Get(ctx context.Context, id uint) (string, error) 
 	return value, nil
 }
 
+// PutAll stores values and returns their ids.
 func (database *FakeDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
@@ -52,6 +55,7 @@ func (database *FakeDatabase) PutAll(ctx context.Context, user app.Token, values
 	return result, nil
 }
 
+// GetAll returns original values by their ids.
 func (database *FakeDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
 	result := make([]string, len(ids))
 	for i := 0; i < len(ids); i++ {
@@ -64,6 +68,7 @@ func (database *FakeDatabase) GetAll(ctx context.Context, ids []uint) ([]string,
 	return result, nil
 }
 
+// Delete removes values by their ids.
 func (database *FakeDatabase) Delete(ctx context.Context, _ app.Token, ids []uint) error {
 	for _, i := range ids {
 		database.Values[i] = deletedValue
@@ -71,6 +76,7 @@ func (database *FakeDatabase) Delete(ctx context.Context, _ app.Token, ids []uin
 	return nil
 }
 
+// Ping always returns an error.
 func (database *FakeDatabase) Ping(ctx context.Context) error {
 	return errors.New("FakeDatabase")
 }

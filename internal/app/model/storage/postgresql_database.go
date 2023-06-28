@@ -45,6 +45,7 @@ func DialPostgreSQLDatabase(ctx context.Context, dsn string) (*PostgreSQLDatabas
 	return NewPostgreSQLDatabase(db), execError
 }
 
+// Put stores value and returns its id.
 func (database *PostgreSQLDatabase) Put(ctx context.Context, user app.Token, value string) (uint, error) {
 	same := database.db.QueryRowContext(ctx, "SELECT id FROM urls WHERE origin = $1", value)
 	if same.Err() != nil {
@@ -68,6 +69,7 @@ func (database *PostgreSQLDatabase) Put(ctx context.Context, user app.Token, val
 	return uint(id), idError
 }
 
+// Get returns original value by its id.
 func (database *PostgreSQLDatabase) Get(ctx context.Context, id uint) (string, error) {
 	row := database.db.QueryRowContext(ctx, "SELECT origin, deleted FROM urls WHERE id = $1", int64(id))
 	var origin string
@@ -81,6 +83,7 @@ func (database *PostgreSQLDatabase) Get(ctx context.Context, id uint) (string, e
 	return origin, nil
 }
 
+// PutAll stores values and returns their ids.
 func (database *PostgreSQLDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
 	transaction, beginError := database.db.Begin()
 	if beginError != nil {
@@ -107,6 +110,7 @@ func (database *PostgreSQLDatabase) PutAll(ctx context.Context, user app.Token, 
 	return ids, nil
 }
 
+// GetAll returns original values by their ids.
 func (database *PostgreSQLDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
 	args := make([]string, 0, len(ids))
 	for _, id := range ids {
@@ -131,6 +135,7 @@ func (database *PostgreSQLDatabase) GetAll(ctx context.Context, ids []uint) ([]s
 	return result, nil
 }
 
+// Delete removes values by their ids.
 func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, ids []uint) error {
 	transaction, beginError := database.db.Begin()
 	if beginError != nil {
@@ -158,6 +163,7 @@ func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, 
 	return nil
 }
 
+// Ping returns an error if the database is unavailable.
 func (database *PostgreSQLDatabase) Ping(ctx context.Context) error {
 	return database.db.PingContext(ctx)
 }

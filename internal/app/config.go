@@ -6,15 +6,28 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+// Config is the application configuration.
 type Config struct {
-	ServerAddress   string `env:"SERVER_ADDRESS"`
-	BaseURL         string `env:"BASE_URL"`
-	ShortenerPath   string `env:"SHORTENER_PATH"`
-	APIPath         string `env:"API_PATH"`
+	// ServerAddress is the address that the app runs on.
+	ServerAddress string `env:"SERVER_ADDRESS"`
+
+	// BaseURL is the base url for the shortened urls.
+	BaseURL string `env:"BASE_URL"`
+
+	// ShortenerPath is the root of the app.
+	ShortenerPath string `env:"SHORTENER_PATH"`
+
+	// APIPath is the root of the app's API.
+	APIPath string `env:"API_PATH"`
+
+	// FileStoragePath is path to the file database.
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
-	DatabaseDSN     string `env:"DATABASE_DSN"`
+
+	// DatabaseDSN is the DSN to connect to.
+	DatabaseDSN string `env:"DATABASE_DSN"`
 }
 
+// InitConfig initializes Config and returns it.
 func InitConfig() (Config, error) {
 	var environment Config
 	parseError := env.Parse(&environment)

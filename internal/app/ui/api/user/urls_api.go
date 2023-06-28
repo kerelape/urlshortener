@@ -12,11 +12,13 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
+// URLsAPI is urls end-point.
 type URLsAPI struct {
 	history   storage.History
 	shortener model.Shortener
 }
 
+// NewURLsAPI returns a new URLsAPI.
 func NewURLsAPI(history storage.History, shortener model.Shortener) *URLsAPI {
 	return &URLsAPI{
 		history:   history,
@@ -24,6 +26,7 @@ func NewURLsAPI(history storage.History, shortener model.Shortener) *URLsAPI {
 	}
 }
 
+// Route routes this Entry.
 func (api *URLsAPI) Route() http.Handler {
 	router := chi.NewRouter()
 	router.Get("/", api.History)

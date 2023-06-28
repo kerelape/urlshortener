@@ -45,6 +45,7 @@ func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSiz
 	return NewFileDatabase(file, chunkSize), nil
 }
 
+// Put stores value and returns its id.
 func (database *FileDatabase) Put(ctx context.Context, user app.Token, value string) (uint, error) {
 	database.rw.Lock()
 	stat, statError := database.file.Stat()
@@ -74,6 +75,7 @@ func (database *FileDatabase) Put(ctx context.Context, user app.Token, value str
 	return uint(id), writeError
 }
 
+// Get returns original value by its id.
 func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) {
 	database.rw.Lock()
 	defer database.rw.Unlock()
@@ -89,6 +91,7 @@ func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) 
 	return value[:len(value)-1], readStringError
 }
 
+// PutAll stores values and returns their ids.
 func (database *FileDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
@@ -106,6 +109,7 @@ func (database *FileDatabase) PutAll(ctx context.Context, user app.Token, values
 	return result, nil
 }
 
+// GetAll returns original values by their ids.
 func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
 	result := make([]string, len(ids))
 	for i := 0; i < len(ids); i++ {
@@ -118,6 +122,7 @@ func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string,
 	return result, nil
 }
 
+// Delete removes values by their ids.
 func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uint) error {
 	database.rw.Lock()
 	defer database.rw.Unlock()
@@ -130,6 +135,7 @@ func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uin
 	return nil
 }
 
+// Ping always returns an error.
 func (database *FileDatabase) Ping(ctx context.Context) error {
 	return errors.New("FileDatabase")
 }

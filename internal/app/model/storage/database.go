@@ -36,12 +36,14 @@ type DuplicateValueError struct {
 	Origin uint
 }
 
+// NewDuplicateValueError returns a new DuplicateValueError.
 func NewDuplicateValueError(origin uint) DuplicateValueError {
 	return DuplicateValueError{
 		Origin: origin,
 	}
 }
 
+// Error returns description of the error.
 func (e DuplicateValueError) Error() string {
 	return fmt.Sprintf("duplicate value of ID: %d", e.Origin)
 }

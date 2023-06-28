@@ -7,16 +7,19 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
+// SQLPing is the ping end-point.
 type SQLPing struct {
 	database storage.Database
 }
 
+// NewSQLPing returns a new SQLPing.
 func NewSQLPing(database storage.Database) *SQLPing {
 	return &SQLPing{
 		database: database,
 	}
 }
 
+// Route routes this Entry.
 func (ping *SQLPing) Route() http.Handler {
 	router := chi.NewRouter()
 	router.Get(
