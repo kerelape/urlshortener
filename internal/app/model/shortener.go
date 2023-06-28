@@ -7,6 +7,7 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
+// Shortener shortens strings.
 type Shortener interface {
 	// Shorten shortens the given origin string.
 	Shorten(ctx context.Context, user app.Token, origin string) (string, error)
