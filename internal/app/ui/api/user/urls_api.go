@@ -70,6 +70,7 @@ func (api *URLsAPI) History(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+// Delete deletes a URL shortened by the user.
 func (api *URLsAPI) Delete(w http.ResponseWriter, r *http.Request) {
 	user, userError := app.GetToken(r)
 	if userError != nil {

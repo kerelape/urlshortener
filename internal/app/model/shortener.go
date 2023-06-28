@@ -26,16 +26,20 @@ type Shortener interface {
 	Delete(ctx context.Context, user app.Token, shortened []string) error
 }
 
+// DuplicateURLError is returned when attempting to shorten a URL
+// that has already been shortened.
 type DuplicateURLError struct {
-	Origin string
+	Origin string // The original URL that is already shortened.
 }
 
+// NewDuplicateURLError returns a new DuplicateURLError.
 func NewDuplicateURLError(origin string) DuplicateURLError {
 	return DuplicateURLError{
 		Origin: origin,
 	}
 }
 
+// Error returns description of the error.
 func (e DuplicateURLError) Error() string {
 	return fmt.Sprintf("duplicate URL: %s", e.Origin)
 }

@@ -8,8 +8,10 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
+// ErrValueDeleted is returned when the values has been removes from the database.
 var ErrValueDeleted = errors.New("deleted")
 
+// Database is a storage of strings.
 type Database interface {
 	// Put stores the given string value and returns its id.
 	Put(ctx context.Context, user app.Token, value string) (uint, error)
