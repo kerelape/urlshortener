@@ -12,9 +12,9 @@ import (
 	"honnef.co/go/tools/staticcheck"
 )
 
-var ExitInMainAnalyzer analysis.Analyzer = analysis.Analyzer{
+var exitInMainAnalyzer analysis.Analyzer = analysis.Analyzer{
 	Name: "exitinmain",
-	Run:  CheckExitInMain,
+	Run:  checkExitInMain,
 }
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 			loopclosure.Analyzer,
 			printf.Analyzer,
 			unusedresult.Analyzer,
-			&ExitInMainAnalyzer,
+			&exitInMainAnalyzer,
 		)...,
 	)
 }
@@ -49,7 +49,7 @@ func with[T any](source []T, others ...T) []T {
 	return result
 }
 
-func CheckExitInMain(pass *analysis.Pass) (interface{}, error) {
+func checkExitInMain(pass *analysis.Pass) (interface{}, error) {
 	if pass.Pkg.Name() != "main" {
 		return nil, nil
 	}
