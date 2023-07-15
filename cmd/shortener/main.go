@@ -3,6 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -19,7 +20,28 @@ import (
 	"net/http/pprof"
 )
 
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
+)
+
 func main() {
+	if buildVersion == "" {
+		buildVersion = "N/A"
+	}
+	fmt.Printf("Build version: %s\n", buildVersion)
+
+	if buildDate == "" {
+		buildDate = "N/A"
+	}
+	fmt.Printf("Build date: %s\n", buildDate)
+
+	if buildCommit == "" {
+		buildCommit = "N/A"
+	}
+	fmt.Printf("Build commit: %s\n", buildCommit)
+
 	config, configError := app.InitConfig()
 	if configError != nil {
 		panic(configError)
