@@ -25,6 +25,9 @@ type Config struct {
 
 	// DatabaseDSN is the DSN to connect to.
 	DatabaseDSN string `env:"DATABASE_DSN"`
+
+	// EnableHTTPS is used to enable https.
+	EnableHTTPS bool `env:"ENABLE_HTTPS"`
 }
 
 // InitConfig initializes Config and returns it.
@@ -41,6 +44,7 @@ func InitConfig() (Config, error) {
 	flag.StringVar(&flags.APIPath, "api-path", "/api", "API root")
 	flag.StringVar(&flags.ShortenerPath, "app-path", "/", "Shortener root")
 	flag.StringVar(&flags.DatabaseDSN, "d", "", "")
+	flag.BoolVar(&flags.EnableHTTPS, "s", false, "Enable HTTPS")
 	flag.Parse()
 	if environment.ServerAddress == "" {
 		environment.ServerAddress = flags.ServerAddress
@@ -59,6 +63,9 @@ func InitConfig() (Config, error) {
 	}
 	if environment.DatabaseDSN == "" {
 		environment.DatabaseDSN = flags.DatabaseDSN
+	}
+	if !environment.EnableHTTPS {
+		environment.EnableHTTPS = flags.EnableHTTPS
 	}
 	return environment, parseError
 }

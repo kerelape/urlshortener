@@ -16,6 +16,7 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 	"github.com/kerelape/urlshortener/internal/app/ui/api"
+	"golang.org/x/crypto/acme/autocert"
 
 	"net/http/pprof"
 )
@@ -47,7 +48,12 @@ func main() {
 	address := config.ServerAddress
 	shortener := initShortener(database, log, &config)
 	service := initService(shortener, &config, log, history, database)
-	http.ListenAndServe(address, service)
+
+	if config.EnableHTTPS {
+		http.Serve(autocert.NewListener(), service)
+	} else {
+		http.ListenAndServe(address, service)
+	}
 }
 
 func initShortener(database storage.Database, log logging.Log, config *app.Config) model.Shortener {
