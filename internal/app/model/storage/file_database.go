@@ -47,6 +47,10 @@ func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSiz
 
 // Put stores value and returns its id.
 func (database *FileDatabase) Put(ctx context.Context, user app.Token, value string) (uint, error) {
+	if database.file == nil {
+		return 0, ErrDatabaseClosed
+	}
+
 	database.rw.Lock()
 	stat, statError := database.file.Stat()
 	database.rw.Unlock()
@@ -77,6 +81,10 @@ func (database *FileDatabase) Put(ctx context.Context, user app.Token, value str
 
 // Get returns original value by its id.
 func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) {
+	if database.file == nil {
+		return "", ErrDatabaseClosed
+	}
+
 	database.rw.Lock()
 	defer database.rw.Unlock()
 	buffer := make([]byte, database.chunkSize)
@@ -93,6 +101,10 @@ func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) 
 
 // PutAll stores values and returns their ids.
 func (database *FileDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
+	if database.file == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
 		id, putError := database.Put(ctx, user, values[i])
@@ -111,6 +123,10 @@ func (database *FileDatabase) PutAll(ctx context.Context, user app.Token, values
 
 // GetAll returns original values by their ids.
 func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
+	if database.file == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	result := make([]string, len(ids))
 	for i := 0; i < len(ids); i++ {
 		value, getError := database.Get(ctx, ids[i])
@@ -124,6 +140,10 @@ func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string,
 
 // Delete removes values by their ids.
 func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uint) error {
+	if database.file == nil {
+		return ErrDatabaseClosed
+	}
+
 	database.rw.Lock()
 	defer database.rw.Unlock()
 	for _, i := range ids {
@@ -138,4 +158,11 @@ func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uin
 // Ping always returns an error.
 func (database *FileDatabase) Ping(ctx context.Context) error {
 	return errors.New("FileDatabase")
+}
+
+// Close closes the file.
+func (databse *FileDatabase) Close(ctx context.Context) error {
+	file := databse.file
+	databse.file = nil
+	return file.Close()
 }

@@ -8,8 +8,13 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
-// ErrValueDeleted is returned when the values has been removes from the database.
-var ErrValueDeleted = errors.New("deleted")
+var (
+	// ErrValueDeleted is returned when the values has been removes from the database.
+	ErrValueDeleted = errors.New("deleted")
+
+	// ErrDatabaseClosed is returned when the database has been closed.
+	ErrDatabaseClosed = errors.New("database is closed")
+)
 
 // Database is a storage of strings.
 type Database interface {
@@ -30,6 +35,9 @@ type Database interface {
 
 	// Ping returns an error if the database is unavailable.
 	Ping(ctx context.Context) error
+
+	// Close closes the databse.
+	Close(ctx context.Context) error
 }
 
 // DuplicateValueError is returned when trying to put a string

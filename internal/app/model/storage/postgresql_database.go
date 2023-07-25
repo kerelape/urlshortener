@@ -47,6 +47,10 @@ func DialPostgreSQLDatabase(ctx context.Context, dsn string) (*PostgreSQLDatabas
 
 // Put stores value and returns its id.
 func (database *PostgreSQLDatabase) Put(ctx context.Context, user app.Token, value string) (uint, error) {
+	if database.db == nil {
+		return 0, ErrDatabaseClosed
+	}
+
 	same := database.db.QueryRowContext(ctx, "SELECT id FROM urls WHERE origin = $1", value)
 	if same.Err() != nil {
 		return 0, same.Err()
@@ -71,6 +75,10 @@ func (database *PostgreSQLDatabase) Put(ctx context.Context, user app.Token, val
 
 // Get returns original value by its id.
 func (database *PostgreSQLDatabase) Get(ctx context.Context, id uint) (string, error) {
+	if database.db == nil {
+		return "", ErrDatabaseClosed
+	}
+
 	row := database.db.QueryRowContext(ctx, "SELECT origin, deleted FROM urls WHERE id = $1", int64(id))
 	var origin string
 	var deleted bool
@@ -85,6 +93,10 @@ func (database *PostgreSQLDatabase) Get(ctx context.Context, id uint) (string, e
 
 // PutAll stores values and returns their ids.
 func (database *PostgreSQLDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
+	if database.db == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	transaction, beginError := database.db.Begin()
 	if beginError != nil {
 		return nil, beginError
@@ -112,6 +124,10 @@ func (database *PostgreSQLDatabase) PutAll(ctx context.Context, user app.Token, 
 
 // GetAll returns original values by their ids.
 func (database *PostgreSQLDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
+	if database.db == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	args := make([]string, 0, len(ids))
 	for _, id := range ids {
 		args = append(args, strconv.Itoa(int(id)))
@@ -137,6 +153,10 @@ func (database *PostgreSQLDatabase) GetAll(ctx context.Context, ids []uint) ([]s
 
 // Delete removes values by their ids.
 func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, ids []uint) error {
+	if database.db == nil {
+		return ErrDatabaseClosed
+	}
+
 	transaction, beginError := database.db.Begin()
 	if beginError != nil {
 		return beginError
@@ -165,5 +185,14 @@ func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, 
 
 // Ping returns an error if the database is unavailable.
 func (database *PostgreSQLDatabase) Ping(ctx context.Context) error {
+	if database.db == nil {
+		return ErrDatabaseClosed
+	}
 	return database.db.PingContext(ctx)
+}
+
+func (database *PostgreSQLDatabase) Close(context.Context) error {
+	conn := database.db
+	database.db = nil
+	return conn.Close()
 }

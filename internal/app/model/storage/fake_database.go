@@ -21,6 +21,10 @@ func NewFakeDatabase() *FakeDatabase {
 
 // Put stores value and returns its id.
 func (database *FakeDatabase) Put(ctx context.Context, _ app.Token, value string) (uint, error) {
+	if database.Values == nil {
+		return 0, ErrDatabaseClosed
+	}
+
 	for i, v := range database.Values {
 		if v == value {
 			return 0, NewDuplicateValueError(uint(i))
@@ -32,6 +36,10 @@ func (database *FakeDatabase) Put(ctx context.Context, _ app.Token, value string
 
 // Get returns original value by its id.
 func (database *FakeDatabase) Get(ctx context.Context, id uint) (string, error) {
+	if database.Values == nil {
+		return "", ErrDatabaseClosed
+	}
+
 	if id >= uint(len(database.Values)) {
 		return "", errors.New("element does not exist")
 	}
@@ -44,6 +52,10 @@ func (database *FakeDatabase) Get(ctx context.Context, id uint) (string, error) 
 
 // PutAll stores values and returns their ids.
 func (database *FakeDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
+	if database.Values == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
 		id, putError := database.Put(ctx, user, values[i])
@@ -57,6 +69,10 @@ func (database *FakeDatabase) PutAll(ctx context.Context, user app.Token, values
 
 // GetAll returns original values by their ids.
 func (database *FakeDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
+	if database.Values == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	result := make([]string, len(ids))
 	for i := 0; i < len(ids); i++ {
 		value, getError := database.Get(ctx, ids[i])
@@ -70,6 +86,10 @@ func (database *FakeDatabase) GetAll(ctx context.Context, ids []uint) ([]string,
 
 // Delete removes values by their ids.
 func (database *FakeDatabase) Delete(ctx context.Context, _ app.Token, ids []uint) error {
+	if database.Values == nil {
+		return ErrDatabaseClosed
+	}
+
 	for _, i := range ids {
 		database.Values[i] = deletedValue
 	}
@@ -78,5 +98,13 @@ func (database *FakeDatabase) Delete(ctx context.Context, _ app.Token, ids []uin
 
 // Ping always returns an error.
 func (database *FakeDatabase) Ping(ctx context.Context) error {
+	if database.Values == nil {
+		return ErrDatabaseClosed
+	}
 	return errors.New("FakeDatabase")
+}
+
+func (database *FakeDatabase) Close(context.Context) error {
+	database.Values = nil
+	return nil
 }
