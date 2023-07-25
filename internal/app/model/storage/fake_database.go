@@ -106,6 +106,7 @@ func (database *FakeDatabase) Ping(ctx context.Context) error {
 	return errors.New("FakeDatabase")
 }
 
+// Close closes this database.
 func (database *FakeDatabase) Close(context.Context) error {
 	database.Values = nil
 	return nil

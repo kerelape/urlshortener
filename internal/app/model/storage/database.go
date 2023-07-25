@@ -8,13 +8,11 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
-var (
-	// ErrValueDeleted is returned when the values has been removes from the database.
-	ErrValueDeleted = errors.New("deleted")
+// ErrValueDeleted is returned when the values has been removes from the database.
+var ErrValueDeleted = errors.New("deleted")
 
-	// ErrDatabaseClosed is returned when the database has been closed.
-	ErrDatabaseClosed = errors.New("database is closed")
-)
+// ErrDatabaseClosed is returned when the database has been closed.
+var ErrDatabaseClosed = errors.New("database is closed")
 
 // Database is a storage of strings.
 type Database interface {

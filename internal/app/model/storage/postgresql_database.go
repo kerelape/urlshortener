@@ -191,6 +191,7 @@ func (database *PostgreSQLDatabase) Ping(ctx context.Context) error {
 	return database.db.PingContext(ctx)
 }
 
+// Close closes this database.
 func (database *PostgreSQLDatabase) Close(context.Context) error {
 	conn := database.db
 	database.db = nil
