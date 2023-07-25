@@ -16,7 +16,9 @@ type FakeDatabase struct {
 
 // Return new FakeDatabase.
 func NewFakeDatabase() *FakeDatabase {
-	return &FakeDatabase{}
+	return &FakeDatabase{
+		Values: make([]string, 0),
+	}
 }
 
 // Put stores value and returns its id.
