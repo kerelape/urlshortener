@@ -1,7 +1,9 @@
 package app
 
 import (
+	"encoding/json"
 	"flag"
+	"os"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -28,6 +30,9 @@ type Config struct {
 
 	// EnableHTTPS is used to enable https.
 	EnableHTTPS bool `env:"ENABLE_HTTPS"`
+
+	// ConfigFile is path to config file.
+	ConfigFile string `env:"CONFIG"`
 }
 
 // InitConfig initializes Config and returns it.
@@ -45,6 +50,7 @@ func InitConfig() (Config, error) {
 	flag.StringVar(&flags.ShortenerPath, "app-path", "/", "Shortener root")
 	flag.StringVar(&flags.DatabaseDSN, "d", "", "")
 	flag.BoolVar(&flags.EnableHTTPS, "s", false, "Enable HTTPS")
+	flag.StringVar(&flags.ConfigFile, "c", "", "Path to config file.")
 	flag.Parse()
 	if environment.ServerAddress == "" {
 		environment.ServerAddress = flags.ServerAddress
@@ -67,5 +73,51 @@ func InitConfig() (Config, error) {
 	if !environment.EnableHTTPS {
 		environment.EnableHTTPS = flags.EnableHTTPS
 	}
+	if environment.ConfigFile == "" {
+		environment.ConfigFile = flags.ConfigFile
+	}
+	if err := readConfigFile(&environment); err != nil {
+		return Config{}, err
+	}
 	return environment, parseError
+}
+
+func readConfigFile(config *Config) error {
+	if config.ConfigFile == "" {
+		return nil
+	}
+
+	file, openError := os.Open(config.ConfigFile)
+	if openError != nil {
+		return openError
+	}
+
+	var cfg struct {
+		ServerAddress   string `json:"server_address"`
+		BaseURL         string `json:"base_url"`
+		FileStoragePath string `json:"file_storage_path"`
+		DatabaseDSN     string `json:"database_dsn"`
+		EnableHTTPS     bool   `json:"enable_https"`
+	}
+	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
+		return err
+	}
+
+	if config.ServerAddress == "" {
+		config.ServerAddress = cfg.ServerAddress
+	}
+	if config.BaseURL == "" {
+		config.BaseURL = cfg.BaseURL
+	}
+	if config.FileStoragePath == "" {
+		config.FileStoragePath = cfg.FileStoragePath
+	}
+	if config.DatabaseDSN == "" {
+		config.DatabaseDSN = cfg.DatabaseDSN
+	}
+	if !config.EnableHTTPS {
+		config.EnableHTTPS = cfg.EnableHTTPS
+	}
+
+	return nil
 }
