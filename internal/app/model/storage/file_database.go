@@ -161,8 +161,8 @@ func (database *FileDatabase) Ping(ctx context.Context) error {
 }
 
 // Close closes the file.
-func (databse *FileDatabase) Close(ctx context.Context) error {
-	file := databse.file
-	databse.file = nil
+func (database *FileDatabase) Close(ctx context.Context) error {
+	file := database.file
+	database.file = nil
 	return file.Close()
 }
