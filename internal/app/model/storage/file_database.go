@@ -155,6 +155,27 @@ func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uin
 	return nil
 }
 
+// URLs returns count of URL stored in this file database.
+func (database *FileDatabase) URLs(ctx context.Context) (int, error) {
+	if database.file == nil {
+		return -1, ErrDatabaseClosed
+	}
+	stat, err := database.file.Stat()
+	if err != nil {
+		return -1, err
+	}
+	return int(stat.Size() / int64(database.chunkSize)), nil
+}
+
+// Users always return -1 and an error indicating that the database does not
+// support users.
+func (database *FileDatabase) Users(ctx context.Context) (int, error) {
+	if database.file == nil {
+		return -1, ErrDatabaseClosed
+	}
+	return -1, errors.New("FileDatabase doesn't support users")
+}
+
 // Ping always returns an error.
 func (database *FileDatabase) Ping(ctx context.Context) error {
 	return errors.New("FileDatabase")

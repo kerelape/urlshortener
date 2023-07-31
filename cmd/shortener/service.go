@@ -16,7 +16,6 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 	"github.com/kerelape/urlshortener/internal/app/ui/api"
-	"github.com/kerelape/urlshortener/internal/app/ui/api/internalapi/stats"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -36,7 +35,7 @@ func runService(ctx context.Context) {
 	log := initLog()
 	address := config.ServerAddress
 	shortener := initShortener(database, log, &config)
-	service := initService(shortener, &config, log, history, database, nil) // TODO: stats provider
+	service := initService(shortener, &config, log, history, database)
 
 	server := http.Server{
 		Handler: service,
@@ -108,12 +107,11 @@ func initService(
 	log logging.Log,
 	history storage.History,
 	database storage.Database,
-	statsProvider stats.StatsProvider,
 ) http.Handler {
 	webUI := ui.NewWebUI(
 		map[string]ui.Entry{
 			config.ShortenerPath: ui.NewApp(model, history),
-			config.APIPath:       api.NewAPI(model, history, statsProvider),
+			config.APIPath:       api.NewAPI(model, history, database),
 			"/ping":              ui.NewSQLPing(database),
 		},
 	)

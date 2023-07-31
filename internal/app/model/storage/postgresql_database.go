@@ -183,6 +183,48 @@ func (database *PostgreSQLDatabase) Delete(ctx context.Context, user app.Token, 
 	return nil
 }
 
+// URLs returns count of shorten urls.
+func (database *PostgreSQLDatabase) URLs(ctx context.Context) (int, error) {
+	if database.db == nil {
+		return -1, ErrDatabaseClosed
+	}
+	rows, err := database.db.QueryContext(ctx, "SELECT id FROM urls")
+	if err != nil {
+		return -1, err
+	}
+	var r int
+	for rows.Next() {
+		r++
+	}
+	if err := rows.Close(); err != nil {
+		return -1, err
+	}
+	return r, nil
+}
+
+// Users returns count of users registered in the database.
+func (database *PostgreSQLDatabase) Users(ctx context.Context) (int, error) {
+	if database.db == nil {
+		return -1, ErrDatabaseClosed
+	}
+	rows, err := database.db.QueryContext(ctx, `SELECT "user" FROM urls`)
+	if err != nil {
+		return -1, err
+	}
+	var r = make(map[string]struct{})
+	for rows.Next() {
+		var user string
+		if err := rows.Scan(&user); err != nil {
+			return -1, err
+		}
+		r[user] = struct{}{}
+	}
+	if err := rows.Close(); err != nil {
+		return -1, err
+	}
+	return len(r), nil
+}
+
 // Ping returns an error if the database is unavailable.
 func (database *PostgreSQLDatabase) Ping(ctx context.Context) error {
 	if database.db == nil {

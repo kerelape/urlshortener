@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/kerelape/urlshortener/internal/app"
+	"github.com/kerelape/urlshortener/internal/app/ui/api/internalapi/stats"
 )
 
 // ErrValueDeleted is returned when the values has been removes from the database.
@@ -16,6 +17,8 @@ var ErrDatabaseClosed = errors.New("database is closed")
 
 // Database is a storage of strings.
 type Database interface {
+	stats.StatsProvider
+
 	// Put stores the given string value and returns its id.
 	Put(ctx context.Context, user app.Token, value string) (uint, error)
 
