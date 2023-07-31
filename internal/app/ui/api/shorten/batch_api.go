@@ -10,11 +10,13 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
+// BatchAPI is batch end-point.
 type BatchAPI struct {
 	shortener model.Shortener
 	history   storage.History
 }
 
+// NewBatchAPI returns a new BatchAPI.
 func NewBatchAPI(shortener model.Shortener, history storage.History) *BatchAPI {
 	return &BatchAPI{
 		shortener: shortener,
@@ -22,12 +24,14 @@ func NewBatchAPI(shortener model.Shortener, history storage.History) *BatchAPI {
 	}
 }
 
+// Route routes this Entry.
 func (api *BatchAPI) Route() http.Handler {
 	var router = chi.NewRouter()
 	router.Post("/", api.ServeHTTP)
 	return router
 }
 
+// ServeHTTP shortens many URL and returns an array of short ones.
 func (api *BatchAPI) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	user, userError := app.GetToken(r)
 	if userError != nil {

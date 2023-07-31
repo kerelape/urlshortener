@@ -11,11 +11,13 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/ui/api/user"
 )
 
+// API is api end-point.
 type API struct {
 	shorten ui.Entry
 	user    ui.Entry
 }
 
+// NewAPI returns a new API.
 func NewAPI(shortener model.Shortener, history storage.History) *API {
 	return &API{
 		shorten: shorten.NewShortenAPI(shortener, history),
@@ -23,6 +25,7 @@ func NewAPI(shortener model.Shortener, history storage.History) *API {
 	}
 }
 
+// Route routes this Entry.
 func (api *API) Route() http.Handler {
 	router := chi.NewRouter()
 	router.Mount("/shorten", api.shorten.Route())

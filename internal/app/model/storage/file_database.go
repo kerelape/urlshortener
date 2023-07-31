@@ -12,8 +12,10 @@ import (
 	"github.com/kerelape/urlshortener/internal/app"
 )
 
+// ErrTooLargeValue is returned when the provided stirng is to long.
 var ErrTooLargeValue = errors.New("too large value")
 
+// FileDatabase is a database that stores values in a file.
 type FileDatabase struct {
 	file      *os.File
 	rw        sync.Mutex
@@ -21,6 +23,7 @@ type FileDatabase struct {
 	chunkSize int
 }
 
+// NewFileDatabase returns a new FileDatabase.
 func NewFileDatabase(file *os.File, chunkSize int) *FileDatabase {
 	return &FileDatabase{
 		file:      file,
@@ -29,6 +32,7 @@ func NewFileDatabase(file *os.File, chunkSize int) *FileDatabase {
 	}
 }
 
+// OpenFileDatabase opens a file and returned a new FileDatabase associated with the file.
 func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSize int) (*FileDatabase, error) {
 	flag := os.O_RDWR
 	if create {
@@ -41,7 +45,12 @@ func OpenFileDatabase(name string, create bool, permission fs.FileMode, chunkSiz
 	return NewFileDatabase(file, chunkSize), nil
 }
 
+// Put stores value and returns its id.
 func (database *FileDatabase) Put(ctx context.Context, user app.Token, value string) (uint, error) {
+	if database.file == nil {
+		return 0, ErrDatabaseClosed
+	}
+
 	database.rw.Lock()
 	stat, statError := database.file.Stat()
 	database.rw.Unlock()
@@ -70,7 +79,12 @@ func (database *FileDatabase) Put(ctx context.Context, user app.Token, value str
 	return uint(id), writeError
 }
 
+// Get returns original value by its id.
 func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) {
+	if database.file == nil {
+		return "", ErrDatabaseClosed
+	}
+
 	database.rw.Lock()
 	defer database.rw.Unlock()
 	buffer := make([]byte, database.chunkSize)
@@ -85,7 +99,12 @@ func (database *FileDatabase) Get(ctx context.Context, id uint) (string, error) 
 	return value[:len(value)-1], readStringError
 }
 
+// PutAll stores values and returns their ids.
 func (database *FileDatabase) PutAll(ctx context.Context, user app.Token, values []string) ([]uint, error) {
+	if database.file == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	result := make([]uint, len(values))
 	for i := 0; i < len(values); i++ {
 		id, putError := database.Put(ctx, user, values[i])
@@ -102,7 +121,12 @@ func (database *FileDatabase) PutAll(ctx context.Context, user app.Token, values
 	return result, nil
 }
 
+// GetAll returns original values by their ids.
 func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string, error) {
+	if database.file == nil {
+		return nil, ErrDatabaseClosed
+	}
+
 	result := make([]string, len(ids))
 	for i := 0; i < len(ids); i++ {
 		value, getError := database.Get(ctx, ids[i])
@@ -114,7 +138,12 @@ func (database *FileDatabase) GetAll(ctx context.Context, ids []uint) ([]string,
 	return result, nil
 }
 
+// Delete removes values by their ids.
 func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uint) error {
+	if database.file == nil {
+		return ErrDatabaseClosed
+	}
+
 	database.rw.Lock()
 	defer database.rw.Unlock()
 	for _, i := range ids {
@@ -126,6 +155,14 @@ func (database *FileDatabase) Delete(ctx context.Context, _ app.Token, ids []uin
 	return nil
 }
 
+// Ping always returns an error.
 func (database *FileDatabase) Ping(ctx context.Context) error {
 	return errors.New("FileDatabase")
+}
+
+// Close closes the file.
+func (database *FileDatabase) Close(ctx context.Context) error {
+	file := database.file
+	database.file = nil
+	return file.Close()
 }

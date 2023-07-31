@@ -9,6 +9,7 @@ import (
 
 const tokenCookieName = "token"
 
+// Tokenize is a middleware that assigns tokens to each new user.
 func Tokenize() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -12,13 +12,15 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 )
 
-const ShortURLParam = "short"
+const shortURLParam = "short"
 
+// App is the root REST endpoint.
 type App struct {
 	shortener model.Shortener
 	history   storage.History
 }
 
+// NewApp returns a new App.
 func NewApp(shortener model.Shortener, history storage.History) *App {
 	return &App{
 		shortener: shortener,
@@ -26,15 +28,17 @@ func NewApp(shortener model.Shortener, history storage.History) *App {
 	}
 }
 
+// Route routes this Entry.
 func (application *App) Route() http.Handler {
 	router := chi.NewRouter()
-	router.Get(fmt.Sprintf("/{%s}", ShortURLParam), application.handleReveal)
-	router.Post("/", application.handleShorten)
+	router.Get(fmt.Sprintf("/{%s}", shortURLParam), application.HandleReveal)
+	router.Post("/", application.HandleShorten)
 	return router
 }
 
-func (application *App) handleReveal(w http.ResponseWriter, r *http.Request) {
-	short := chi.URLParam(r, ShortURLParam)
+// HandleReveal redirects to the original URL behind the short url name.
+func (application *App) HandleReveal(w http.ResponseWriter, r *http.Request) {
+	short := chi.URLParam(r, shortURLParam)
 	origin, err := application.shortener.Reveal(r.Context(), short)
 	if err != nil {
 		if errors.Is(err, storage.ErrValueDeleted) {
@@ -49,7 +53,8 @@ func (application *App) handleReveal(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (application *App) handleShorten(w http.ResponseWriter, r *http.Request) {
+// HandleShorten shortens a URL provided in the request body.
+func (application *App) HandleShorten(w http.ResponseWriter, r *http.Request) {
 	origin, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

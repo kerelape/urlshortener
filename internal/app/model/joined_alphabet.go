@@ -1,29 +1,34 @@
 package model
 
+// JoinedAlphabet is an alphabet that consists of two other alphabets.
 type JoinedAlphabet struct {
-	Base Alphabet
-	Tail Alphabet
+	base Alphabet
+	tail Alphabet
 }
 
+// NewJoinedAlphabet returns a new Alphabet.
 func NewJoinedAlphabet(base Alphabet, tail Alphabet) *JoinedAlphabet {
 	return &JoinedAlphabet{
-		Base: base,
-		Tail: tail,
+		base: base,
+		tail: tail,
 	}
 }
 
+// Size returns the amount of runes in this alphabet.
 func (alphabet *JoinedAlphabet) Size() uint {
-	return alphabet.Base.Size() + alphabet.Tail.Size()
+	return alphabet.base.Size() + alphabet.tail.Size()
 }
 
+// Rune returns a rune by index.
 func (alphabet *JoinedAlphabet) Rune(id uint) rune {
-	startSize := alphabet.Base.Size()
+	startSize := alphabet.base.Size()
 	if id >= startSize {
-		return alphabet.Tail.Rune(id - startSize)
+		return alphabet.tail.Rune(id - startSize)
 	}
-	return alphabet.Base.Rune(id)
+	return alphabet.base.Rune(id)
 }
 
+// String returns this alphabet as a sequence of runes in it.
 func (alphabet *JoinedAlphabet) String() string {
-	return alphabet.Base.String() + alphabet.Tail.String()
+	return alphabet.base.String() + alphabet.tail.String()
 }
