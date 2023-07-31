@@ -109,7 +109,7 @@ func initService(
 	history storage.History,
 	database storage.Database,
 ) http.Handler {
-	var _, trustedSubnet, err = net.ParseCIDR("")
+	var _, trustedSubnet, err = net.ParseCIDR(config.TrustedSubnet)
 	if err != nil {
 		panic(err)
 	}
