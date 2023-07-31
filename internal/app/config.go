@@ -54,7 +54,7 @@ func InitConfig() (Config, error) {
 	flag.StringVar(&flags.DatabaseDSN, "d", "", "")
 	flag.BoolVar(&flags.EnableHTTPS, "s", false, "Enable HTTPS")
 	flag.StringVar(&flags.ConfigFile, "c", "", "Path to config file.")
-	flag.StringVar(&flags.TrustedSubnet, "t", "127.0.0.1/24", "Trusted subnet for internal apis.")
+	flag.StringVar(&flags.TrustedSubnet, "t", "127.0.0.1/32", "Trusted subnet for internal apis.")
 	flag.Parse()
 	if environment.ServerAddress == "" {
 		environment.ServerAddress = flags.ServerAddress
