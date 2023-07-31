@@ -3,6 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"context"
+	"net"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -108,10 +109,15 @@ func initService(
 	history storage.History,
 	database storage.Database,
 ) http.Handler {
+	var _, trustedSubnet, err = net.ParseCIDR("")
+	if err != nil {
+		panic(err)
+	}
+
 	webUI := ui.NewWebUI(
 		map[string]ui.Entry{
 			config.ShortenerPath: ui.NewApp(model, history),
-			config.APIPath:       api.NewAPI(model, history, database),
+			config.APIPath:       api.NewAPI(model, history, database, trustedSubnet),
 			"/ping":              ui.NewSQLPing(database),
 		},
 	)

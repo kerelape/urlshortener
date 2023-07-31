@@ -33,6 +33,9 @@ type Config struct {
 
 	// ConfigFile is path to config file.
 	ConfigFile string `env:"CONFIG"`
+
+	// TrustedSubnet is ips for internal api.
+	TrustedSubnet string `env:"TRUSTED_SUBNET"`
 }
 
 // InitConfig initializes Config and returns it.
@@ -51,6 +54,7 @@ func InitConfig() (Config, error) {
 	flag.StringVar(&flags.DatabaseDSN, "d", "", "")
 	flag.BoolVar(&flags.EnableHTTPS, "s", false, "Enable HTTPS")
 	flag.StringVar(&flags.ConfigFile, "c", "", "Path to config file.")
+	flag.StringVar(&flags.TrustedSubnet, "t", "", "Trusted subnet for internal apis.")
 	flag.Parse()
 	if environment.ServerAddress == "" {
 		environment.ServerAddress = flags.ServerAddress
@@ -76,6 +80,9 @@ func InitConfig() (Config, error) {
 	if environment.ConfigFile == "" {
 		environment.ConfigFile = flags.ConfigFile
 	}
+	if environment.TrustedSubnet == "" {
+		environment.TrustedSubnet = flags.TrustedSubnet
+	}
 	if err := readConfigFile(&environment); err != nil {
 		return Config{}, err
 	}
@@ -98,6 +105,7 @@ func readConfigFile(config *Config) error {
 		FileStoragePath string `json:"file_storage_path"`
 		DatabaseDSN     string `json:"database_dsn"`
 		EnableHTTPS     bool   `json:"enable_https"`
+		TrustedSubnet   string `json:"trusted_subnet"`
 	}
 	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
 		return err
@@ -117,6 +125,9 @@ func readConfigFile(config *Config) error {
 	}
 	if !config.EnableHTTPS {
 		config.EnableHTTPS = cfg.EnableHTTPS
+	}
+	if config.TrustedSubnet == "" {
+		config.TrustedSubnet = cfg.TrustedSubnet
 	}
 
 	return nil

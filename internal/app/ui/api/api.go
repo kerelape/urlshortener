@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -21,11 +22,16 @@ type API struct {
 }
 
 // NewAPI returns a new API.
-func NewAPI(shortener model.Shortener, history storage.History, statsProvider stats.StatsProvider) *API {
+func NewAPI(
+	shortener model.Shortener,
+	history storage.History,
+	statsProvider stats.StatsProvider,
+	internalTrustedSubnet *net.IPNet,
+) *API {
 	return &API{
 		shorten:  shorten.NewShortenAPI(shortener, history),
 		user:     user.NewUserAPI(history, shortener),
-		internal: internalapi.MakeInternal(statsProvider),
+		internal: internalapi.MakeInternal(statsProvider, internalTrustedSubnet),
 	}
 }
 
@@ -34,5 +40,6 @@ func (api *API) Route() http.Handler {
 	router := chi.NewRouter()
 	router.Mount("/shorten", api.shorten.Route())
 	router.Mount("/user", api.user.Route())
+	router.Mount("/internal", api.internal.Route())
 	return router
 }
