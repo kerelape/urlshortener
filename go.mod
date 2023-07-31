@@ -23,6 +23,7 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/tools v0.9.3
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
