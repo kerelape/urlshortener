@@ -194,6 +194,9 @@ func (database *PostgreSQLDatabase) URLs(ctx context.Context) (int, error) {
 	}
 	var r int
 	for rows.Next() {
+		if err := rows.Err(); err != nil {
+			return -1, err
+		}
 		r++
 	}
 	if err := rows.Close(); err != nil {
@@ -213,6 +216,9 @@ func (database *PostgreSQLDatabase) Users(ctx context.Context) (int, error) {
 	}
 	var r = make(map[string]struct{})
 	for rows.Next() {
+		if err := rows.Err(); err != nil {
+			return -1, err
+		}
 		var user string
 		if err := rows.Scan(&user); err != nil {
 			return -1, err
