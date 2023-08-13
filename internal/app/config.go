@@ -13,6 +13,9 @@ type Config struct {
 	// ServerAddress is the address that the app runs on.
 	ServerAddress string `env:"SERVER_ADDRESS"`
 
+	// ServerAddressGRPC is the address that the grpc server runs on.
+	ServerAddressGRPC string `env:"SERVER_ADDRESS_GRPC"`
+
 	// BaseURL is the base url for the shortened urls.
 	BaseURL string `env:"BASE_URL"`
 
@@ -55,6 +58,7 @@ func InitConfig() (Config, error) {
 	flag.BoolVar(&flags.EnableHTTPS, "s", false, "Enable HTTPS")
 	flag.StringVar(&flags.ConfigFile, "c", "", "Path to config file.")
 	flag.StringVar(&flags.TrustedSubnet, "t", "127.0.0.1/32", "Trusted subnet for internal apis.")
+	flag.StringVar(&flags.ServerAddressGRPC, "g", "localhost:9999", "grpc")
 	flag.Parse()
 	if environment.ServerAddress == "" {
 		environment.ServerAddress = flags.ServerAddress
@@ -82,6 +86,9 @@ func InitConfig() (Config, error) {
 	}
 	if environment.TrustedSubnet == "" {
 		environment.TrustedSubnet = flags.TrustedSubnet
+	}
+	if environment.ServerAddressGRPC == "" {
+		environment.ServerAddressGRPC = flags.ServerAddressGRPC
 	}
 	if err := readConfigFile(&environment); err != nil {
 		return Config{}, err
