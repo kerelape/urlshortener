@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package io.github.kerelape.urlshortener;
+
+option go_package = "github.com/kerelape/urlshortener/pkg/shortener/proto";
+
+service Shortener {
+    rpc Shorten(ShortenRequest) returns (ShortenResponse);
+    rpc Reveal(RevealRequest) returns (RevealResponse);
+}
+
+message ShortenRequest {
+    string url = 1;
+}
+
+message ShortenResponse {
+    string result = 1;
+}
+
+message RevealRequest {
+    string short_url = 1;
+}
+
+message RevealResponse {
+    string original_url = 1;
+}

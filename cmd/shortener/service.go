@@ -3,6 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"context"
+	"net"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -16,7 +17,10 @@ import (
 	"github.com/kerelape/urlshortener/internal/app/model/storage"
 	"github.com/kerelape/urlshortener/internal/app/ui"
 	"github.com/kerelape/urlshortener/internal/app/ui/api"
+	pkgshortener "github.com/kerelape/urlshortener/pkg/shortener"
+	pb "github.com/kerelape/urlshortener/pkg/shortener/proto"
 	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
 )
 
 func runService(ctx context.Context) {
@@ -37,6 +41,19 @@ func runService(ctx context.Context) {
 	shortener := initShortener(database, log, &config)
 	service := initService(shortener, &config, log, history, database)
 
+	serverGrpc := grpc.NewServer()
+	pb.RegisterShortenerServer(serverGrpc, pkgshortener.NewServer(shortener))
+
+	go func() {
+		listener, err := net.Listen("tcp", config.ServerAddressGRPC)
+		if err != nil {
+			panic(err)
+		}
+		if err := serverGrpc.Serve(listener); err != nil {
+			panic(err)
+		}
+	}()
+
 	server := http.Server{
 		Handler: service,
 		Addr:    address,
@@ -51,6 +68,7 @@ func runService(ctx context.Context) {
 	}()
 
 	<-ctx.Done()
+	serverGrpc.GracefulStop()
 	if err := server.Close(); err != nil {
 		panic(err)
 	}
@@ -108,10 +126,15 @@ func initService(
 	history storage.History,
 	database storage.Database,
 ) http.Handler {
+	var _, trustedSubnet, err = net.ParseCIDR(config.TrustedSubnet)
+	if err != nil {
+		panic(err)
+	}
+
 	webUI := ui.NewWebUI(
 		map[string]ui.Entry{
 			config.ShortenerPath: ui.NewApp(model, history),
-			config.APIPath:       api.NewAPI(model, history),
+			config.APIPath:       api.NewAPI(model, history, database, trustedSubnet),
 			"/ping":              ui.NewSQLPing(database),
 		},
 	)

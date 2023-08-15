@@ -98,6 +98,23 @@ func (database *FakeDatabase) Delete(ctx context.Context, _ app.Token, ids []uin
 	return nil
 }
 
+// URLs returns count of URL stored in this fake database.
+func (database *FakeDatabase) URLs(ctx context.Context) (int, error) {
+	if database.Values == nil {
+		return 0, ErrDatabaseClosed
+	}
+	return len(database.Values), nil
+}
+
+// Users always return -1 and an error indicating that the database does not
+// support users.
+func (database *FakeDatabase) Users(ctx context.Context) (int, error) {
+	if database.Values == nil {
+		return 0, ErrDatabaseClosed
+	}
+	return -1, errors.New("FakeDatabase doesn't support users")
+}
+
 // Ping always returns an error.
 func (database *FakeDatabase) Ping(ctx context.Context) error {
 	if database.Values == nil {

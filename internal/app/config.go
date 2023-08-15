@@ -13,6 +13,9 @@ type Config struct {
 	// ServerAddress is the address that the app runs on.
 	ServerAddress string `env:"SERVER_ADDRESS"`
 
+	// ServerAddressGRPC is the address that the grpc server runs on.
+	ServerAddressGRPC string `env:"SERVER_ADDRESS_GRPC"`
+
 	// BaseURL is the base url for the shortened urls.
 	BaseURL string `env:"BASE_URL"`
 
@@ -33,6 +36,9 @@ type Config struct {
 
 	// ConfigFile is path to config file.
 	ConfigFile string `env:"CONFIG"`
+
+	// TrustedSubnet is ips for internal api.
+	TrustedSubnet string `env:"TRUSTED_SUBNET"`
 }
 
 // InitConfig initializes Config and returns it.
@@ -51,6 +57,8 @@ func InitConfig() (Config, error) {
 	flag.StringVar(&flags.DatabaseDSN, "d", "", "")
 	flag.BoolVar(&flags.EnableHTTPS, "s", false, "Enable HTTPS")
 	flag.StringVar(&flags.ConfigFile, "c", "", "Path to config file.")
+	flag.StringVar(&flags.TrustedSubnet, "t", "127.0.0.1/32", "Trusted subnet for internal apis.")
+	flag.StringVar(&flags.ServerAddressGRPC, "g", "localhost:9999", "grpc")
 	flag.Parse()
 	if environment.ServerAddress == "" {
 		environment.ServerAddress = flags.ServerAddress
@@ -76,6 +84,12 @@ func InitConfig() (Config, error) {
 	if environment.ConfigFile == "" {
 		environment.ConfigFile = flags.ConfigFile
 	}
+	if environment.TrustedSubnet == "" {
+		environment.TrustedSubnet = flags.TrustedSubnet
+	}
+	if environment.ServerAddressGRPC == "" {
+		environment.ServerAddressGRPC = flags.ServerAddressGRPC
+	}
 	if err := readConfigFile(&environment); err != nil {
 		return Config{}, err
 	}
@@ -98,6 +112,7 @@ func readConfigFile(config *Config) error {
 		FileStoragePath string `json:"file_storage_path"`
 		DatabaseDSN     string `json:"database_dsn"`
 		EnableHTTPS     bool   `json:"enable_https"`
+		TrustedSubnet   string `json:"trusted_subnet"`
 	}
 	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
 		return err
@@ -117,6 +132,9 @@ func readConfigFile(config *Config) error {
 	}
 	if !config.EnableHTTPS {
 		config.EnableHTTPS = cfg.EnableHTTPS
+	}
+	if config.TrustedSubnet == "" {
+		config.TrustedSubnet = cfg.TrustedSubnet
 	}
 
 	return nil
